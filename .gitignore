@@ -1,0 +1,25 @@
+# Ignore __pycache__ folders
+__pycache__/
+
+# Ignore .pyc files (compiled Python)
+*.pyc
+
+# Ignore Pygame assets
+*.wav
+*.ogg
+*.png
+*.jpg
+
+# Ignore virtual environment
+venv/
+env/
+myvenv/
+
+# Ignore editor/project-specific files
+.vscode/
+.idea/
+*.swp
+
+# Ignore OS-specific files
+.DS_Store
+Thumbs.db
