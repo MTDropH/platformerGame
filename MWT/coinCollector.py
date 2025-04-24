@@ -5,6 +5,8 @@ Starter tasks:
 - Change the image from an alien to caseoh
 - Change the background color
 - Increase the speed of the player
+
+Extra: For each increase of 5 points the player gets, the coins should fall faster, and the player's controls should flip!
 """
 
 import pygame

@@ -1,22 +1,21 @@
 import sys
 import pygame
 
-# --- constants -----------------------------------------------------
-WIDTH, HEIGHT = 800, 448           # 14 x 32‑pixel tiles high (exact multiple of 32)
+WIDTH, HEIGHT = 800, 448
 FPS = 60
 GRAVITY = 0.5
 PLAYER_SPEED = 4
 JUMP_VELOCITY = -10
 TILE = 32
+LEVEL_WIDTH = 1600
 
-# colours (R,G,B)
 SKY      = (135, 206, 235)
 GROUND   = (160, 82, 45)
 PLAYER_C = (255, 0, 0)
 ENEMY_C  = (0, 0, 255)
 PLAT_C   = (124, 252, 0)
+FLAG_C   = (255, 215, 0)
 
-# -------------------------------------------------------------------
 pygame.init()
 screen = pygame.display.set_mode((WIDTH, HEIGHT))
 pygame.display.set_caption("Simple Platformer Demo")
@@ -24,7 +23,6 @@ clock = pygame.time.Clock()
 
 
 class Entity(pygame.sprite.Sprite):
-    """Base class for player & enemies"""
     def __init__(self, x, y, w, h, colour):
         super().__init__()
         self.image = pygame.Surface((w, h))
@@ -53,12 +51,10 @@ class Player(Entity):
 
     def apply_gravity(self):
         self.vel.y += GRAVITY
-        if self.vel.y > TILE:   # terminal‑ish velocity clamp
+        if self.vel.y > TILE:
             self.vel.y = TILE
 
     def collide(self, tiles):
-        """Very simple AABB collisions, resolves separately on x & y."""
-        # horizontal
         self.rect.x += self.vel.x
         hits = [t for t in tiles if self.rect.colliderect(t)]
         for tile in hits:
@@ -67,7 +63,6 @@ class Player(Entity):
             elif self.vel.x < 0:
                 self.rect.left = tile.right
 
-        # vertical
         self.rect.y += self.vel.y
         hits = [t for t in tiles if self.rect.colliderect(t)]
         self.on_ground = False
@@ -91,42 +86,43 @@ class Enemy(Entity):
     def update(self):
         super().update()
         if self.rect.left <= self.left_bound or self.rect.right >= self.right_bound:
-            self.vel.x *= -1   # change direction
+            self.vel.x *= -1
 
 
 def create_level():
-    """Returns list of rect tiles & enemy sprites for a tiny demo level."""
     tiles = []
-    # ground
-    for x in range(0, WIDTH, TILE):
+    for x in range(0, LEVEL_WIDTH, TILE):
         tiles.append(pygame.Rect(x, HEIGHT - TILE, TILE, TILE))
 
-    # floating platforms
     tiles.append(pygame.Rect(200, HEIGHT - 5*TILE, TILE*3, TILE))
     tiles.append(pygame.Rect(500, HEIGHT - 7*TILE, TILE*2, TILE))
+    tiles.append(pygame.Rect(1000, HEIGHT - 4*TILE, TILE*4, TILE))
+    tiles.append(pygame.Rect(1350, HEIGHT - 6*TILE, TILE*2, TILE))
 
-    # enemies
     enemies = pygame.sprite.Group()
     enemies.add(Enemy(300, HEIGHT - 2*TILE, 300, 500))
     enemies.add(Enemy(550, HEIGHT - 8*TILE - TILE, 500, 650))
+    enemies.add(Enemy(1020, HEIGHT - 5*TILE, 1000, 1200))
 
-    return tiles, enemies
+    flag = pygame.Rect(LEVEL_WIDTH - 2*TILE, HEIGHT - 3*TILE, TILE, 2*TILE)
+
+    return tiles, enemies, flag
 
 
-def draw_tiles(surf, tiles):
+def draw_tiles(surf, tiles, camera_x):
     for rect in tiles:
-        pygame.draw.rect(surf, PLAT_C, rect)
+        shifted_rect = rect.move(-camera_x, 0)
+        pygame.draw.rect(surf, PLAT_C, shifted_rect)
 
 
 def main():
-    tiles, enemies = create_level()
+    tiles, enemies, flag = create_level()
     player = Player(64, HEIGHT - 3*TILE)
-
     sprites = pygame.sprite.Group(player, *enemies)
 
     running = True
     while running:
-        dt = clock.tick(FPS) / 1000  # seconds passed – not really used but handy
+        dt = clock.tick(FPS) / 1000
 
         for event in pygame.event.get():
             if event.type == pygame.QUIT:
@@ -139,16 +135,31 @@ def main():
 
         sprites.update()
 
-        # collision: player with enemies
-        if pygame.sprite.spritecollideany(player, enemies):
-            print("Ouch! Respawn...")
-            player.rect.topleft = (64, HEIGHT - 3*TILE)
-            player.vel = pygame.Vector2(0, 0)
+        for enemy in enemies:
+            if player.rect.colliderect(enemy.rect):
+                if player.vel.y > 0 and player.rect.bottom - enemy.rect.top < TILE // 2:
+                    enemies.remove(enemy)
+                    sprites.remove(enemy)
+                    player.vel.y = JUMP_VELOCITY / 1.5
+                else:
+                    print("Ouch! Respawn...")
+                    player.rect.topleft = (64, HEIGHT - 3*TILE)
+                    player.vel = pygame.Vector2(0, 0)
 
-        # --- drawing ------------------------------------------------
+        # End condition
+        if player.rect.colliderect(flag):
+            print("Level complete!")
+            running = False
+
+        camera_x = max(0, min(player.rect.centerx - WIDTH // 2, LEVEL_WIDTH - WIDTH))
+
         screen.fill(SKY)
-        draw_tiles(screen, tiles)
-        sprites.draw(screen)
+        draw_tiles(screen, tiles, camera_x)
+        for sprite in sprites:
+            screen.blit(sprite.image, sprite.rect.move(-camera_x, 0))
+
+        pygame.draw.rect(screen, FLAG_C, flag.move(-camera_x, 0))
+
         pygame.display.update()
 
     pygame.quit()
