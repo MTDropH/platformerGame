@@ -110,7 +110,6 @@ def create_level():
 
     return tiles, enemies, flag
 
-
 def draw_tiles(surf, tiles, camera_x):
     for rect in tiles:
         shifted_rect = rect.move(-camera_x, 0)
@@ -148,11 +147,6 @@ def main():
                     player.rect.topleft = (64, HEIGHT - 3*TILE)
                     player.vel = pygame.Vector2(0, 0)
 
-        # End condition
-        if player.rect.colliderect(flag):
-            print("Level complete!")
-            running = False
-
         camera_x = max(0, min(player.rect.centerx - WIDTH // 2, LEVEL_WIDTH - WIDTH))
 
         screen.fill(SKY)
@@ -160,7 +154,16 @@ def main():
         for sprite in sprites:
             screen.blit(sprite.image, sprite.rect.move(-camera_x, 0))
 
-        pygame.draw.rect(screen, FLAG_C, flag.move(-camera_x, 0))
+        onetime = 0
+        if (onetime == 0) and (len(enemies) == 0):
+            enemies.add(Enemy(1020, HEIGHT - 5*TILE, 300, 1500))
+            onetime = 1
+            
+        if len(enemies) == 0:
+            pygame.draw.rect(screen, FLAG_C, flag.move(-camera_x,-0))
+            if player.rect.colliderect(flag):
+                print("Level.complete!")
+                running = False
 
         pygame.display.update()
 
