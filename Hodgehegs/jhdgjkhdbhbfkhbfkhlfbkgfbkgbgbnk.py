@@ -1,4 +1,4 @@
-import s         ys
+import sys
 import pygame
 
 WIDTH, HEIGHT = 800, 448
@@ -26,7 +26,7 @@ class Entity(pygame.sprite.Sprite):
     def __init__(self, x, y, w, h, colour):
         super().__init__()
         self.image = pygame.Surface((w, h))
-        self.image.fill(colour)
+        self.image = pygame.transform.scale(pygame.image.load("MWT/caseoh.jpeg").convert_alpha(), (50, 50))
         self.rect = self.image.get_rect(topleft=(x, y))
         self.vel = pygame.Vector2(0, 0)
 
@@ -82,6 +82,7 @@ class Enemy(Entity):
         self.left_bound = left_bound
         self.right_bound = right_bound
         self.vel.x = 2
+        self.image = pygame.transform.scale(pygame.image.load("MWT/alien.png").convert_alpha(), (50, 50))
 
     def update(self):
         super().update()
@@ -168,3 +169,5 @@ def main():
 
 if __name__ == "__main__":
     main()
+
+player_img = pygame.image.load("MWT/caseoh.jpeg").convert_alpha()

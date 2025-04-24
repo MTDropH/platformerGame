@@ -5,7 +5,7 @@ import sys
 # --- constants ---
 WIDTH, HEIGHT = 400, 600
 FPS = 60
-PLAYER_SPEED = 4
+PLAYER_SPEED = 1000
 BASE_SPEED = 2
 MAX_MISSES = 3
 
@@ -16,7 +16,7 @@ pygame.display.set_caption("Coin Collector")
 clock = pygame.time.Clock()
 font = pygame.font.SysFont(None, 36)
 
-# --- load images ---
+
 player_img = pygame.image.load("MWT/caseoh.jpeg").convert_alpha()
 coin_img_orig = pygame.image.load("MWT/coin.png").convert_alpha()
 coin_img = pygame.transform.scale(coin_img_orig, (50, 50))
