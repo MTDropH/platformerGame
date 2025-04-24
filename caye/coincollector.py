@@ -4,7 +4,7 @@ Remember: `pip install pygame`
 Starter tasks:
 - Change the image from an alien to caseoh
 - Change the background color
-- Increase the speed of the player
+- Increase the sped of the player
 
 Extra: For each increase of 5 points the player gets, the coins should fall faster, and the player's controls should flip!
 """
@@ -16,9 +16,9 @@ import sys
 # --- constants ---
 WIDTH, HEIGHT = 400, 600
 FPS = 60
-PLAYER_SPEED = 4
+PLAYER_SPEED = 1000
 BASE_SPEED = 2
-MAX_MISSES = 3
+MAX_MISSES = 6
 
 # --- init ---
 pygame.init()
