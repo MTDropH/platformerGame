@@ -28,7 +28,7 @@ clock = pygame.time.Clock()
 font = pygame.font.SysFont(None, 36)
 
 # --- load images ---
-player_img = pygame.image.load("MWT/alien.png").convert_alpha()
+player_img = pygame.image.load("MWT/caseoh.jpeg").convert_alpha()
 coin_img_orig = pygame.image.load("MWT/coin.png").convert_alpha()
 coin_img = pygame.transform.scale(coin_img_orig, (50, 50))
 
@@ -68,7 +68,7 @@ while running:
             coin.center = (random.randint(40, WIDTH - 40), -50)
 
     # --- draw ---
-    screen.fill((30, 144, 255))
+    screen.fill((145, 0, 0))
     screen.blit(player_img, player)
     screen.blit(coin_img, coin)
 
