@@ -115,8 +115,9 @@ def draw_tiles(surf, tiles, camera_x):
         shifted_rect = rect.move(-camera_x, 0)
         pygame.draw.rect(surf, PLAT_C, shifted_rect)
 
-
+onetime = 0
 def main():
+    global onetime
     tiles, enemies, flag = create_level()
     player = Player(64, HEIGHT - 3*TILE)
     sprites = pygame.sprite.Group(player, *enemies)
@@ -154,12 +155,13 @@ def main():
         for sprite in sprites:
             screen.blit(sprite.image, sprite.rect.move(-camera_x, 0))
 
-        onetime = 0
         if (onetime == 0) and (len(enemies) == 0):
-            enemies.add(Enemy(1020, HEIGHT - 5*TILE, 300, 1500))
+            new_enemy = Enemy(1020, HEIGHT - 5*TILE, 300, 1500)
+            enemies.add(new_enemy)
+            sprites.add(new_enemy)  # <-- now it will be drawn and updated
             onetime = 1
             
-        if len(enemies) == 0:
+        if onetime == 1:
             pygame.draw.rect(screen, FLAG_C, flag.move(-camera_x,-0))
             if player.rect.colliderect(flag):
                 print("Level.complete!")

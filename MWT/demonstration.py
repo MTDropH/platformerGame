@@ -1,4 +1,4 @@
-import s         ys
+import sys
 import pygame
 
 WIDTH, HEIGHT = 800, 448
