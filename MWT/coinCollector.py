@@ -2,7 +2,7 @@
 Remember: `pip install pygame`
 
 Starter tasks:
-- Change the image from an alien to caseoh
+- Change the image from an alien to something else
 - Change the background color
 - Increase the speed of the player
 
