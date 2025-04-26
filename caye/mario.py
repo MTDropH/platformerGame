@@ -158,7 +158,7 @@ def main():
         if (onetime == 0) and (len(enemies) == 0):
             new_enemy = Enemy(1020, HEIGHT - 5*TILE, 300, 1500)
             enemies.add(new_enemy)
-            sprites.add(new_enemy)  # <-- now it will be drawn and updated
+            sprites.add(new_enemy)
             onetime = 1
             
         if onetime == 1:
