@@ -36,6 +36,8 @@ score = 0
 start_ticks = pygame.time.get_ticks()
 
 running = True
+game_over = False
+
 while running:
     dt = clock.tick(FPS) / 1000
 
