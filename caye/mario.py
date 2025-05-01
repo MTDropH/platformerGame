@@ -157,11 +157,14 @@ def main():
 
         if (onetime == 0) and (len(enemies) == 0):
             new_enemy = Enemy(1020, HEIGHT - 5*TILE, 300, 1500)
-            new_enemy2 = Enemy(720, HEIGHT - 5*TILE, 300, 1500)
+            new_enemy2 = Enemy(720, HEIGHT - 5*TILE, 200, 900)
+            new_enemy3 = Enemy(720, HEIGHT - 7*TILE, 399, 400, (102, 0, 0))
             enemies.add(new_enemy)
             sprites.add(new_enemy)
             enemies.add(new_enemy2)
             sprites.add(new_enemy2)
+            enemies.add(new_enemy3)
+            sprites.add(new_enemy3)
             onetime = 1
             
         if onetime == 1:

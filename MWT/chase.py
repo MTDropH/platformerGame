@@ -10,6 +10,7 @@ Warm-Up Tasks:
 Bonus: Make the player leave a trail (like a snake)
 """
 
+
 import pygame
 import sys
 
@@ -17,7 +18,7 @@ import sys
 WIDTH, HEIGHT = 640, 480
 FPS = 60
 PLAYER_SPEED = 5
-ENEMY_SPEED = 2
+ENEMY_SPEED = 3
 
 pygame.init()
 screen = pygame.display.set_mode((WIDTH, HEIGHT))
@@ -27,7 +28,7 @@ font = pygame.font.SysFont(None, 36)
 
 WHITE = (255, 255, 255)
 BLACK = (0, 0, 0)
-PLAYER_C = (0, 200, 255)
+PLAYER_C = (0, 100, 255)
 ENEMY_C = (255, 0, 0)
 
 player = pygame.Rect(WIDTH // 2, HEIGHT // 2, 32, 32)
@@ -72,6 +73,7 @@ while running:
     screen.fill(BLACK)
     pygame.draw.rect(screen, PLAYER_C, player)
     pygame.draw.rect(screen, ENEMY_C, enemy)
+    pygame.draw.rect(screen, ENEMY2_C, enemy)
 
     pygame.display.flip()
 
