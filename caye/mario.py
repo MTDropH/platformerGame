@@ -77,8 +77,8 @@ class Player(Entity):
 
 
 class Enemy(Entity):
-    def __init__(self, x, y, left_bound, right_bound):
-        super().__init__(x, y, TILE, TILE, ENEMY_C)
+    def __init__(self, x, y, left_bound, right_bound, colour=ENEMY_C):
+        super().__init__(x, y, TILE, TILE, colour)
         self.left_bound = left_bound
         self.right_bound = right_bound
         self.vel.x = 2
@@ -101,7 +101,7 @@ def create_level():
 
     enemies = pygame.sprite.Group()
     enemies.add(Enemy(300, HEIGHT - 2*TILE, 300, 500))
-    enemies.add(Enemy(550, HEIGHT - 8*TILE - TILE, 500, 650))
+    enemies.add(Enemy(550, HEIGHT - 8*TILE - TILE, 500, 650, (100,100,100)))
     enemies.add(Enemy(890, HEIGHT - 9*TILE, 300, 1200))
     enemies.add(Enemy(1020, HEIGHT - 5*TILE, 1000, 1200))
     enemies.add(Enemy(1020, HEIGHT - 5*TILE, 300, 1500))
@@ -157,8 +157,11 @@ def main():
 
         if (onetime == 0) and (len(enemies) == 0):
             new_enemy = Enemy(1020, HEIGHT - 5*TILE, 300, 1500)
+            new_enemy2 = Enemy(720, HEIGHT - 5*TILE, 300, 1500)
             enemies.add(new_enemy)
             sprites.add(new_enemy)
+            enemies.add(new_enemy2)
+            sprites.add(new_enemy2)
             onetime = 1
             
         if onetime == 1:

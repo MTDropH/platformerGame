@@ -26,7 +26,7 @@ class Entity(pygame.sprite.Sprite):
     def __init__(self, x, y, w, h, colour):
         super().__init__()
         self.image = pygame.Surface((w, h))
-        self.image = pygame.transform.scale(pygame.image.load("MWT/caseoh.jpeg").convert_alpha(), (50, 50))
+        self.image = pygame.transform.scale(pygame.image.load("Hodgehegs/download (1).jpg").convert_alpha(), (50, 50))
         self.rect = self.image.get_rect(topleft=(x, y))
         self.vel = pygame.Vector2(0, 0)
 
