@@ -1,24 +1,10 @@
-"""
-Warm-Up Tasks:
------------------
-1. Change the player color
-2. Make the enemy move faster
-3. Add a second enemy that follows you
-4. Add a score that goes up every second
-5. Add a Game Over message when the enemy touches you
-
-Bonus: Make the player leave a trail (like a snake)
-"""
-
-
 import pygame
 import sys
 
-# --- Setup ---
 WIDTH, HEIGHT = 640, 480
 FPS = 60
 PLAYER_SPEED = 5
-ENEMY_SPEED = 3
+ENEMY_SPEED = 2
 
 pygame.init()
 screen = pygame.display.set_mode((WIDTH, HEIGHT))
@@ -28,17 +14,16 @@ font = pygame.font.SysFont(None, 36)
 
 WHITE = (255, 255, 255)
 BLACK = (0, 0, 0)
-PLAYER_C = (0, 100, 255)
+PLAYER_C = (0, 200, 255)
 ENEMY_C = (255, 0, 0)
 
 player = pygame.Rect(WIDTH // 2, HEIGHT // 2, 32, 32)
 enemy = pygame.Rect(100, 100, 32, 32)
 score = 0
 start_ticks = pygame.time.get_ticks()
-
-running = True
 game_over = False
 
+running = True
 while running:
     dt = clock.tick(FPS) / 1000
 
@@ -68,11 +53,19 @@ while running:
         if enemy.y > player.y:
             enemy.y -= ENEMY_SPEED
 
+        if player.colliderect(enemy):
+            game_over = True
+
         score = (pygame.time.get_ticks() - start_ticks) // 1000
 
     screen.fill(BLACK)
     pygame.draw.rect(screen, PLAYER_C, player)
     pygame.draw.rect(screen, ENEMY_C, enemy)
+    screen.blit(font.render(f"Score: {score}", True, WHITE), (10, 10))
+
+    if game_over:
+        msg = font.render("Game Over!", True, WHITE)
+        screen.blit(msg, msg.get_rect(center=(WIDTH//2, HEIGHT//2)))
 
     pygame.display.flip()
 

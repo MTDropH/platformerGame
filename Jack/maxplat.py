@@ -1,7 +1,6 @@
 import sys
 import pygame
 
-# --- Game Constants ---
 WIDTH, HEIGHT = 800, 448
 FPS = 60
 GRAVITY = 0.5
@@ -12,30 +11,26 @@ LEVEL_WIDTH = 1600
 
 SKY = (135, 206, 235)
 
-# --- Init Pygame and Load Static Images ---
 pygame.init()
 screen = pygame.display.set_mode((WIDTH, HEIGHT))
-pygame.display.set_caption("Simple Platformer Demo")
+pygame.display.set_caption("Max the Knight")
 clock = pygame.time.Clock()
 
-# Load static images
 platform_img = pygame.transform.scale(pygame.image.load("Jack/dirt.png").convert_alpha(), (TILE, TILE))
 flag_img = pygame.transform.scale(pygame.image.load("Jack/Max final run 1.png").convert_alpha(), (TILE, 2 * TILE))
 
-# Load animation frames
 player_run_frames = [
-    pygame.transform.scale(pygame.image.load("Jack/Max final run 1.png").convert_alpha(), (TILE, int(TILE * 1.5))),
-    pygame.transform.scale(pygame.image.load("Jack/Max final run 2.png").convert_alpha(), (TILE, int(TILE * 1.5)))
+    pygame.transform.scale(pygame.image.load("Jack/Max final run 1.png").convert_alpha(), (TILE, int(TILE * 2))),
+    pygame.transform.scale(pygame.image.load("Jack/Max final run 2.png").convert_alpha(), (TILE, int(TILE * 2)))
 ]
 
 player_idle_frames = [
-    pygame.transform.scale(pygame.image.load("Jack/Max idle 1.png").convert_alpha(), (TILE, int(TILE * 1.5))),
-    pygame.transform.scale(pygame.image.load("Jack/Max idle 2.png").convert_alpha(), (TILE, int(TILE * 1.5)))
+    pygame.transform.scale(pygame.image.load("Jack/Max idle 1.png").convert_alpha(), (TILE, int(TILE * 2))),
+    pygame.transform.scale(pygame.image.load("Jack/Max idle 2.png").convert_alpha(), (TILE, int(TILE * 2)))
 ]
 
-enemy_frames = player_run_frames  # Placeholder reuse
+enemy_frames = player_run_frames
 
-# --- Animated Sprite Base Class ---
 class AnimatedEntity(pygame.sprite.Sprite):
     def __init__(self, x, y, frames, animation_speed=0.1):
         super().__init__()
@@ -57,7 +52,6 @@ class AnimatedEntity(pygame.sprite.Sprite):
         self.rect.x += self.vel.x
         self.rect.y += self.vel.y
 
-# --- Player Class ---
 class Player(AnimatedEntity):
     def __init__(self, x, y):
         super().__init__(x, y, player_idle_frames)
@@ -76,13 +70,12 @@ class Player(AnimatedEntity):
             self.vel.y = JUMP_VELOCITY
 
     def animate(self):
-        # Swap frames and speed based on movement state
         if self.vel.x == 0:
             self.frames = player_idle_frames
-            self.animation_speed = 0.07  # slower idle
+            self.animation_speed = 0.07
         else:
             self.frames = player_run_frames
-            self.animation_speed = 0.15  # faster run
+            self.animation_speed = 0.15
 
         self.frame_index += self.animation_speed
         if self.frame_index >= len(self.frames):
@@ -119,7 +112,6 @@ class Player(AnimatedEntity):
                 self.rect.top = tile.bottom
                 self.vel.y = 0
 
-# --- Enemy Class ---
 class Enemy(AnimatedEntity):
     def __init__(self, x, y, left_bound, right_bound):
         super().__init__(x, y, enemy_frames)
@@ -132,16 +124,15 @@ class Enemy(AnimatedEntity):
         if self.rect.left <= self.left_bound or self.rect.right >= self.right_bound:
             self.vel.x *= -1
 
-# --- Level Building ---
 def create_level():
     tiles = []
     for x in range(0, LEVEL_WIDTH, TILE):
         tiles.append(pygame.Rect(x, HEIGHT - TILE, TILE, TILE))
 
-    tiles.append(pygame.Rect(200, HEIGHT - 5*TILE, TILE*3, TILE))
-    tiles.append(pygame.Rect(500, HEIGHT - 7*TILE, TILE*2, TILE))
-    tiles.append(pygame.Rect(1000, HEIGHT - 4*TILE, TILE*4, TILE))
-    tiles.append(pygame.Rect(1350, HEIGHT - 6*TILE, TILE*2, TILE))
+    tiles.append(pygame.Rect(200, HEIGHT - 5*TILE, TILE, TILE))
+    tiles.append(pygame.Rect(500, HEIGHT - 7*TILE, TILE, TILE))
+    tiles.append(pygame.Rect(1000, HEIGHT - 4*TILE, TILE, TILE))
+    tiles.append(pygame.Rect(1350, HEIGHT - 6*TILE, TILE, TILE))
 
     enemies = pygame.sprite.Group()
     enemies.add(Enemy(300, HEIGHT - 2*TILE, 300, 500))
@@ -157,7 +148,6 @@ def draw_tiles(surf, tiles, camera_x):
         for x in range(0, rect.width, TILE):
             surf.blit(platform_img, (rect.x + x - camera_x, rect.y))
 
-# --- Main Loop ---
 def main():
     tiles, enemies, flag = create_level()
     player = Player(64, HEIGHT - 3*TILE)
