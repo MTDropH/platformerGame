@@ -1,12 +1,13 @@
 {
-    "tiles": [
+  
+      "tiles": [ 
       {"x": 64, "y": 416, "width": 32, "height": 32},
-      {"x": 32, "y": 416, "width": 32, "height": 32},
+      {"x": 3200, "y": 128, "width": 32, "height": 32},
       {"x": 64, "y": 416, "width": 32, "height": 32},
-      {"x": 200, "y": 288, "width": 96, "height": 32},
+      {"x": 500, "y": 64, "width": 96, "height": 32},
       {"x": 500, "y": 224, "width": 64, "height": 32},
       {"x": 1000, "y": 320, "width": 128, "height": 32},
-      {"x": 1350, "y": 192, "width": 128, "height": 32},
+      {"x": 1000, "y": 32, "width": 16, "height": 32},
   
        {"x": 0, "y": 416, "width": 32, "height": 32},
       {"x": 32, "y": 416, "width": 32, "height": 32},
@@ -60,7 +61,7 @@
       {"x": 1568, "y": 416, "width": 32, "height": 32}
     ],
     "enemies": [
-      {"x": 300, "y": 384, "left_bound": 300, "right_bound": 500},
+      {"x": 300, "y": 384, "left_bound": 100, "right_bound": 1000},
       {"x": 550, "y": 160, "left_bound": 500, "right_bound": 650},
       {"x": 1020, "y": 288, "left_bound": 1000, "right_bound": 1200}
     ],

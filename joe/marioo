@@ -92,7 +92,7 @@ class Enemy(Entity):
 import json
 
 def create_level():
-    with open('MWT/level1.json', 'r') as f:
+    with open('joe/mario.json', 'r') as f:
         data = json.load(f)
 
     tiles = []
@@ -130,6 +130,8 @@ def draw_tiles(surf, tiles, camera_x):
     for rect in tiles:
         shifted_rect = rect.move(-camera_x, 0)
         pygame.draw.rect(surf, PLAT_C, shifted_rect)
+
+if Player y =< 1000 
 
 
 def main():
