@@ -73,7 +73,6 @@ while running:
     screen.fill(BLACK)
     pygame.draw.rect(screen, PLAYER_C, player)
     pygame.draw.rect(screen, ENEMY_C, enemy)
-    pygame.draw.rect(screen, ENEMY2_C, enemy)
 
     pygame.display.flip()
 
