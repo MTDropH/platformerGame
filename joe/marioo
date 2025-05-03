@@ -131,7 +131,7 @@ def draw_tiles(surf, tiles, camera_x):
         shifted_rect = rect.move(-camera_x, 0)
         pygame.draw.rect(surf, PLAT_C, shifted_rect)
 
-if Player y =< 1000 
+
 
 
 def main():

@@ -27,7 +27,7 @@ player_run_frames = [
         pygame.image.load("Jack/Max final run 1.png").convert_alpha(),
         (TILE, int(TILE * 2)),
     ),
-    pygame.transform.scale(
+    pygame.transform.scale( 
         pygame.image.load("Jack/Max final run 2.png").convert_alpha(),
         (TILE, int(TILE * 2)),
     ),
