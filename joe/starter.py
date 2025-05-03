@@ -1,4 +1,31 @@
+"""
+Remember: `pip install pygame`
+
+Starter tasks:
+- Change the image from an alien to something else
+- Change the background color
+- Increase the speed of the player
+
+Extra: For each increase of 5 points the player gets, the coins should fall faster, and the player's controls should flip!
+"""
+
+import pygame
+import random
 import sys
+
+# --- constants ---
+WIDTH, HEIGHT = 400, 600
+FPS = 60
+PLAYER_SPEED = 4
+BASE_SPEED = 2
+MAX_MISSES = 3
+
+# --- init ---
+pygame.init()
+screen = pygame.display.set_mode((WIDTH, HEIGHT))
+pygame.display.set_caption("Coin Collector")
+clock = pygame.time.Clock()
+font = pygame.font.SysFont(None, 36)import sys
 import pygame
 
 WIDTH, HEIGHT = 800, 448
@@ -9,10 +36,10 @@ JUMP_VELOCITY = -10
 TILE = 32
 LEVEL_WIDTH = 1600
 
-SKY      = (0, 0, 201)
-GROUND   = (0, 194, 0)
-PLAYER_C = (0, 0, 0)
-ENEMY_C  = (255, 255, 255)
+SKY      = (135, 206, 235)
+GROUND   = (160, 82, 45)
+PLAYER_C = (255, 0, 0)
+ENEMY_C  = (0, 0, 255)
 PLAT_C   = (124, 252, 0)
 FLAG_C   = (255, 215, 0)
 
@@ -77,8 +104,8 @@ class Player(Entity):
 
 
 class Enemy(Entity):
-    def __init__(self, x, y, left_bound, right_bound, colour=ENEMY_C):
-        super().__init__(x, y, TILE, TILE, colour)
+    def __init__(self, x, y, left_bound, right_bound):
+        super().__init__(x, y, TILE, TILE, ENEMY_C)
         self.left_bound = left_bound
         self.right_bound = right_bound
         self.vel.x = 2
@@ -101,23 +128,21 @@ def create_level():
 
     enemies = pygame.sprite.Group()
     enemies.add(Enemy(300, HEIGHT - 2*TILE, 300, 500))
-    enemies.add(Enemy(550, HEIGHT - 8*TILE - TILE, 500, 650, (100,100,100)))
-    enemies.add(Enemy(890, HEIGHT - 9*TILE, 300, 1200))
+    enemies.add(Enemy(550, HEIGHT - 8*TILE - TILE, 500, 650))
     enemies.add(Enemy(1020, HEIGHT - 5*TILE, 1000, 1200))
-    enemies.add(Enemy(1020, HEIGHT - 5*TILE, 300, 1500))
 
     flag = pygame.Rect(LEVEL_WIDTH - 2*TILE, HEIGHT - 3*TILE, TILE, 2*TILE)
 
     return tiles, enemies, flag
+
 
 def draw_tiles(surf, tiles, camera_x):
     for rect in tiles:
         shifted_rect = rect.move(-camera_x, 0)
         pygame.draw.rect(surf, PLAT_C, shifted_rect)
 
-onetime = 0
+
 def main():
-    global onetime
     tiles, enemies, flag = create_level()
     player = Player(64, HEIGHT - 3*TILE)
     sprites = pygame.sprite.Group(player, *enemies)
@@ -148,6 +173,11 @@ def main():
                     player.rect.topleft = (64, HEIGHT - 3*TILE)
                     player.vel = pygame.Vector2(0, 0)
 
+        # End condition
+        if player.rect.colliderect(flag):
+            print("Level complete!")
+            running = False
+
         camera_x = max(0, min(player.rect.centerx - WIDTH // 2, LEVEL_WIDTH - WIDTH))
 
         screen.fill(SKY)
@@ -155,23 +185,7 @@ def main():
         for sprite in sprites:
             screen.blit(sprite.image, sprite.rect.move(-camera_x, 0))
 
-        if (onetime == 0) and (len(enemies) == 0):
-            new_enemy = Enemy(1020, HEIGHT - 5*TILE, 300, 1500)
-            new_enemy2 = Enemy(720, HEIGHT - 5*TILE, 200, 900)
-            new_enemy3 = Enemy(720, HEIGHT - 7*TILE, 399, 400, (102, 0, 0))
-            enemies.add(new_enemy)
-            sprites.add(new_enemy)
-            enemies.add(new_enemy2)
-            sprites.add(new_enemy2)
-            enemies.add(new_enemy3)
-            sprites.add(new_enemy3)
-            onetime = 1
-            
-        if onetime == 1:
-            pygame.draw.rect(screen, FLAG_C, flag.move(-camera_x,-0))
-            if player.rect.colliderect(flag):
-                print("Level.complete!")
-                running = False
+        pygame.draw.rect(screen, FLAG_C, flag.move(-camera_x, 0))
 
         pygame.display.update()
 
@@ -181,3 +195,64 @@ def main():
 
 if __name__ == "__main__":
     main()
+
+
+# --- load images ---
+player_img = pygame.image.load("").convert_alpha()
+coin_img_orig = pygame.image.load("MWT/coin.png").convert_alpha()
+coin_img = pygame.transform.scale(coin_img_orig, (50, 50))
+
+# --- game state ---
+player = player_img.get_rect(midbottom=(WIDTH // 2, HEIGHT - 10))
+coin = coin_img.get_rect(center=(random.randint(40, WIDTH - 40), -50))
+
+score = 0
+missed = 0
+
+# --- game loop ---
+running = True
+while running:
+    dt = clock.tick(FPS) / 1000  # Time in seconds since last frame
+
+    for event in pygame.event.get():
+        if event.type == pygame.QUIT:
+            running = False
+
+    keys = pygame.key.get_pressed()
+    if keys[pygame.K_LEFT]:
+        player.x -= PLAYER_SPEED
+    if keys[pygame.K_RIGHT]:
+        player.x += PLAYER_SPEED
+    player.x = max(0, min(player.x, WIDTH - player.width))
+
+    if missed < MAX_MISSES:
+        speed = BASE_SPEED + score // 5
+        coin.y += speed
+
+        if coin.y > HEIGHT + 40:
+            missed += 1
+            coin.center = (random.randint(40, WIDTH - 40), -50)
+
+        if player.colliderect(coin):
+            score += 1
+            coin.center = (random.randint(40, WIDTH - 40), -50)
+
+    # --- draw ---
+    screen.fill((30, 144, 255))
+    screen.blit(player_img, player)
+    screen.blit(coin_img, coin)
+
+    score_surf = font.render(f"Score: {score}", True, (255, 255, 255))
+    missed_surf = font.render(f"Missed: {missed}", True, (255, 255, 0))
+    screen.blit(score_surf, (10, 10))
+    screen.blit(missed_surf, (10, 50))
+
+    if missed >= MAX_MISSES:
+        over_surf = font.render("Game Over!", True, (255, 0, 0))
+        screen.blit(over_surf, over_surf.get_rect(center=(WIDTH//2, HEIGHT//2)))
+
+    pygame.display.flip()
+
+pygame.quit()
+sys.exit()
+

@@ -12,6 +12,7 @@ __pycache__/
 venv/
 env/
 myvenv/
+joevenv/
 
 # Ignore editor/project-specific files
 .vscode/
