@@ -20,7 +20,10 @@ clock = pygame.time.Clock()
 # Player settings
 player_width, player_height = 40, 60
 player_x, player_y = 50, HEIGHT - player_height - 10
-player_img = pygame.image.load("MWT/caseoh.jpeg").convert_alpha()
+TILE = 100
+player_run_frames = [
+    pygame.transform.scale(pygame.image.load("Hodgehegs/Mario1.png").convert_alpha(), (TILE, int(TILE * 2))),
+    pygame.transform.scale(pygame.image.load("Hodgehegs/Mariorun1.png").convert_alpha(), (TILE, int(TILE * 2)))]
 player_vel = 5
 player_jump = -15
 gravity = 1
