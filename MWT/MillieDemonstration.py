@@ -32,12 +32,12 @@ def load(path, w, h):
 
 # ▸ player frames (replace paths with your own art)
 player_run_frames  = [
-    load("Jack/Max final run 1.png",  TILE, TILE * 2),
-    load("Jack/Max final run 2.png",  TILE, TILE * 2),
+    load("Hodgehegs/Mario1.png",  TILE, TILE * 2),
+    load("Hodgehegs/Mariorun1.png",  TILE, TILE * 2),
 ]
 player_idle_frames = [
-    load("Jack/Max idle 1.png",       TILE, TILE * 2),
-    load("Jack/Max idle 2.png",       TILE, TILE * 2),
+    load("Hodgehegs/Mario1.png",       TILE, TILE * 2),
+    load("Hodgehegs/Mario1.png",       TILE, TILE * 2),
 ]
 
 # ───────────────────────────────

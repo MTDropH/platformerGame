@@ -16,7 +16,14 @@ win = pygame.display.set_mode((WIDTH, HEIGHT))
 pygame.display.set_caption("Donkey Kong")
 
 clock = pygame.time.Clock()
-
+TILE = 100
+player_run_frames  = [
+    load("Hodgehegs/Mario1.png",  TILE, TILE * 2),
+    load("Hodgehegs/Mariorun1.png",  TILE, TILE * 2),
+]
+player_idle_frames = [
+    load("Hodgehegs/Mario1.png",       TILE, TILE * 2),
+    load("Hodgehegs/Mario1.png",       TILE, TILE * 2),]
 # Player settings
 player_width, player_height = 40, 60
 player_x, player_y = 50, HEIGHT - player_height - 10
