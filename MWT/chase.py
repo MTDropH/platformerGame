@@ -14,8 +14,8 @@ font = pygame.font.SysFont(None, 36)
 
 WHITE = (255, 255, 255)
 BLACK = (0, 0, 0)
-PLAYER_C = (0, 200, 255)
-ENEMY_C = (255, 0, 0)
+PLAYER_C = (90, 74, 254)
+ENEMY_C = (25, 45, 8)
 
 player = pygame.Rect(WIDTH // 2, HEIGHT // 2, 32, 32)
 enemy = pygame.Rect(100, 100, 32, 32)
