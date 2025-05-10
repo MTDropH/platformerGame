@@ -171,26 +171,39 @@ class Enemy(AnimatedEntity):
                     self.vel.x *= -1
         super().update()
 
-def create_level():
-    tiles = []
-    for x in range(0, LEVEL_WIDTH, TILE):
-        tiles.append(pygame.Rect(x, HEIGHT - TILE, TILE, TILE))
+import json
 
-    tiles.extend([
-        pygame.Rect(200, HEIGHT - 5*TILE, TILE, TILE),
-        pygame.Rect(500, HEIGHT - 7*TILE, TILE, TILE),
-        pygame.Rect(1000, HEIGHT - 5*TILE, TILE, TILE),
-        pygame.Rect(1350, HEIGHT - 4*TILE, TILE, TILE),
-        pygame.Rect(1382, HEIGHT - 6*TILE, TILE, TILE),
-        pygame.Rect(1414, HEIGHT - 6*TILE, TILE, TILE),
-    ])
+def create_level():
+    with open('Jack/level1.json', 'r') as f:
+        data = json.load(f)
+
+    tiles = []
+    for tile_data in data["tiles"]:
+        rect = pygame.Rect(
+            tile_data["x"],
+            tile_data["y"],
+            tile_data["width"],
+            tile_data["height"]
+        )
+        tiles.append(rect)
 
     enemies = pygame.sprite.Group()
-    enemies.add(Enemy(300, HEIGHT - 2*TILE, 300, 500))
-    enemies.add(Enemy(550, HEIGHT - 8*TILE, 500, 650))
-    enemies.add(Enemy(1020, HEIGHT - 5*TILE, 1000, 1200))
+    for enemy_data in data["enemies"]:
+        enemy = Enemy(
+            enemy_data["x"],
+            enemy_data["y"],
+            enemy_data["left_bound"],
+            enemy_data["right_bound"]
+        )
+        enemies.add(enemy)
 
-    flag = pygame.Rect(LEVEL_WIDTH - 2*TILE, HEIGHT - 3*TILE, TILE, 2*TILE)
+    flag_data = data["flag"]
+    flag = pygame.Rect(
+        flag_data["x"],
+        flag_data["y"],
+        flag_data["width"],
+        flag_data["height"]
+    )
 
     return tiles, enemies, flag
 
@@ -275,11 +288,11 @@ def main():
 
         if attack_rect:
             if player.facing_right:
-                sword_pos = (player.rect.right, player.rect.top)
+                sword_pos = (player.rect.right, player.rect.top+32)
                 screen.blit(sword_img, (sword_pos[0] - camera_x, sword_pos[1]))
             else:
                 flipped_sword = pygame.transform.flip(sword_img, True, False)
-                sword_pos = (player.rect.left - sword_img.get_width(), player.rect.top)
+                sword_pos = (player.rect.left - sword_img.get_width(), player.rect.top+32)
                 screen.blit(flipped_sword, (sword_pos[0] - camera_x, sword_pos[1]))
 
         screen.blit(flag_img, flag.move(-camera_x, 0))
