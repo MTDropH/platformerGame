@@ -3,7 +3,7 @@
 -----------------
 1. Change the player color or size
 2. Make the obstacle move faster
-3. Add a score that increases every jump
+3. Add a score that increases every jump over an enemy
 4. Add a second type of obstacle
 5. Add a win condition if you survive 30 seconds
 
