@@ -85,10 +85,6 @@ while running:
         if player.colliderect(obstacle):
             game_over = True
 
-        # Win condition after 30 seconds
-        if (pygame.time.get_ticks() - start_ticks) > 30000:
-            game_over = True
-
     # --- Draw ---
     screen.fill(BLACK)
     pygame.draw.rect(screen, PLAYER_C, player)
