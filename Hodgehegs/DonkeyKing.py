@@ -124,10 +124,11 @@ class Player(AnimatedEntity):
 # ───────────────────────────────
 platforms = [
     pygame.Rect(   0, HEIGHT -  20, WIDTH, 20),
-    pygame.Rect( 100, 500, 600, 20),
-    pygame.Rect(   0, 400, 600, 20),
-    pygame.Rect( 100, 300, 600, 20),
-    pygame.Rect(   0, 200, 600, 20),
+    
+    pygame.Rect( 100, 400, 600, 20),
+    pygame.Rect(   0, 300, 600, 20),
+    pygame.Rect( 100, 200, 600, 20),
+    pygame.Rect(   0, 100, 600, 20),
 ]
 goal = pygame.Rect(WIDTH - 60, 150, 50, 50)
 

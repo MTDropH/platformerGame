@@ -5,7 +5,6 @@ __pycache__/
 *.pyc
 
 # Ignore Pygame assets
-*.wav
 *.ogg
 
 # Ignore virtual environment
