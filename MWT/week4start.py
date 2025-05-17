@@ -15,9 +15,9 @@ import sys
 # --- Setup ---
 WIDTH, HEIGHT = 640, 480
 FPS = 60
-GRAVITY = 100
-JUMP_VELOCITY = -100
-OBSTACLE_SPEED = 100
+GRAVITY = 0.6
+JUMP_VELOCITY = -12
+OBSTACLE_SPEED = 4
 
 pygame.init()
 
@@ -83,6 +83,10 @@ while running:
 
         # Collision
         if player.colliderect(obstacle):
+            game_over = True
+
+        # Win condition after 30 seconds
+        if (pygame.time.get_ticks() - start_ticks) > 30000:
             game_over = True
 
     # --- Draw ---
