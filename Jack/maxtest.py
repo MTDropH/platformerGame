@@ -291,14 +291,11 @@ def show_title_screen():
     quadrupled_title_img = pygame.transform.scale(title_img, (original_width * 4, original_height * 4))
     title_rect = quadrupled_title_img.get_rect(center=(WIDTH // 2, HEIGHT // 2))
 
-    instruction_text = font.render("Press any key to start", True, (255, 255, 255))
-    instruction_rect = instruction_text.get_rect(center=(WIDTH // 2, HEIGHT - 50))
 
     waiting = True
     while waiting:
         screen.fill((0, 0, 0))
         screen.blit(quadrupled_title_img, title_rect)
-        screen.blit(instruction_text, instruction_rect)
         pygame.display.flip()
 
         for event in pygame.event.get():
