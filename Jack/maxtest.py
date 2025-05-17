@@ -8,7 +8,8 @@ GRAVITY = 0.5
 PLAYER_SPEED = 3
 JUMP_VELOCITY = -10
 TILE = 32
-LEVEL_WIDTH = 1600
+LEVEL_WIDTH = 3200
+ENEMY_SPEED = 1  
 
 SKY = (135, 206, 235)
 
@@ -23,13 +24,11 @@ platform_img = pygame.transform.scale(pygame.image.load("Jack/dirt.png").convert
 flag_img = pygame.transform.scale(pygame.image.load("Jack/Max final run 1.png").convert_alpha(), (TILE, 2 * TILE))
 title_img = pygame.image.load("Jack/max title screen.png").convert_alpha()
 
-# Try loading optional game over screen
 try:
     game_over_img = pygame.image.load("Jack/game over.png").convert_alpha()
 except:
     game_over_img = None
 
-# Player sprites
 player_run_frames = [
     pygame.transform.scale(pygame.image.load("Jack/Max final run 1.png").convert_alpha(), (TILE, int(TILE * 2))),
     pygame.transform.scale(pygame.image.load("Jack/Max final run 2.png").convert_alpha(), (TILE, int(TILE * 2)))
@@ -43,7 +42,6 @@ player_idle_frames = [
 player_attack_frame = pygame.transform.scale(pygame.image.load("Jack/Max swing sword1.png").convert_alpha(), (TILE, int(TILE * 2)))
 sword_img = pygame.transform.scale(pygame.image.load("Jack/sword end.png").convert_alpha(), (32, 32))
 
-# Hurt sprites
 player_run_hurt_frames = [
     pygame.transform.scale(pygame.image.load("Jack/Max run hurt1.png").convert_alpha(), (TILE, int(TILE * 2))),
     pygame.transform.scale(pygame.image.load("Jack/Max run hurt2.png").convert_alpha(), (TILE, int(TILE * 2)))
@@ -56,11 +54,35 @@ player_idle_hurt_frames = [
 
 player_attack_hurt_frame = pygame.transform.scale(pygame.image.load("Jack/Max swing sword hurt.png").convert_alpha(), (TILE, int(TILE * 2)))
 
+# Power-up image
+powerup_img = pygame.transform.scale(pygame.image.load("Jack/armour polish.png").convert_alpha(), (TILE, TILE))
+
+# Powered-up player frames
+powered_up_idle_frames = [
+    pygame.transform.scale(pygame.image.load("Jack/Max idle super1.png").convert_alpha(), (TILE, int(TILE * 2))),
+    pygame.transform.scale(pygame.image.load("Jack/Max idle super2.png").convert_alpha(), (TILE, int(TILE * 2)))
+]
+
+powered_up_run_frames = [
+    pygame.transform.scale(pygame.image.load("Jack/Max run super1.png").convert_alpha(), (TILE, int(TILE * 2))),
+    pygame.transform.scale(pygame.image.load("Jack/Max run super2.png").convert_alpha(), (TILE, int(TILE * 2)))
+]
+
+powered_up_attack_frame = pygame.transform.scale(pygame.image.load("Jack/Max swing sword super.png").convert_alpha(), (TILE, int(TILE * 2)))
+
 enemy_frames = [
     pygame.transform.scale(pygame.image.load("Jack/evil guy run1.png").convert_alpha(), (TILE, int(TILE * 2))),
     pygame.transform.scale(pygame.image.load("Jack/evil guy run2.png").convert_alpha(), (TILE, int(TILE * 2)))
 ]
+# Load life images
+life1_img = pygame.image.load("Jack/health bar1.png").convert_alpha()
+life2_img = pygame.image.load("Jack/health bar2.png").convert_alpha()
+life3_img = pygame.image.load("Jack/health bar3.png").convert_alpha()
 
+# Scale life images if needed
+life1_img = pygame.transform.scale(life1_img, (132, 64))  # adjust size
+life2_img = pygame.transform.scale(life2_img, (132, 64))
+life3_img = pygame.transform.scale(life3_img, (132, 64))
 class AnimatedEntity(pygame.sprite.Sprite):
     def __init__(self, x, y, frames, animation_speed=0.1):
         super().__init__()
@@ -90,32 +112,21 @@ class Player(AnimatedEntity):
         self.is_attacking = False
         self.attack_timer = 0
         self.attack_cooldown = 0.3
-        self.lives = 2
-        self.is_hurt_version = False
-
-    def handle_input(self, keys):
-        self.vel.x = 0
-        if keys[pygame.K_LEFT]:
-            self.vel.x = -PLAYER_SPEED
-            self.facing_right = False
-        if keys[pygame.K_RIGHT]:
-            self.vel.x = PLAYER_SPEED
-            self.facing_right = True
-        if (keys[pygame.K_SPACE] or keys[pygame.K_UP]) and self.on_ground:
-            self.vel.y = JUMP_VELOCITY
-        if keys[pygame.K_z] and not self.is_attacking:
-            self.is_attacking = True
-            self.attack_timer = self.attack_cooldown
+        self.lives = 2  # 3: powered up, 2: normal, 1: hurt
 
     def animate(self):
-        if self.is_hurt_version:
-            run_frames = player_run_hurt_frames
-            idle_frames = player_idle_hurt_frames
-            attack_frame = player_attack_hurt_frame
-        else:
+        if self.lives == 3:
+            run_frames = powered_up_run_frames
+            idle_frames = powered_up_idle_frames
+            attack_frame = powered_up_attack_frame
+        elif self.lives == 2:
             run_frames = player_run_frames
             idle_frames = player_idle_frames
             attack_frame = player_attack_frame
+        else:  # lives == 1
+            run_frames = player_run_hurt_frames
+            idle_frames = player_idle_hurt_frames
+            attack_frame = player_attack_hurt_frame
 
         if self.is_attacking:
             image = attack_frame
@@ -142,19 +153,33 @@ class Player(AnimatedEntity):
         if self.vel.y > TILE:
             self.vel.y = TILE
 
+    def handle_input(self, keys):
+        self.vel.x = 0
+        if keys[pygame.K_LEFT]:
+            self.vel.x = -PLAYER_SPEED
+            self.facing_right = False
+        if keys[pygame.K_RIGHT]:
+            self.vel.x = PLAYER_SPEED
+            self.facing_right = True
+        if (keys[pygame.K_SPACE] or keys[pygame.K_UP]) and self.on_ground:
+            self.vel.y = JUMP_VELOCITY
+        if keys[pygame.K_z] and not self.is_attacking:
+            self.is_attacking = True
+            self.attack_timer = self.attack_cooldown
+
     def collide(self, tiles):
         self.rect.x += self.vel.x
-        hits = [t for t in tiles if self.rect.colliderect(t)]
-        for tile in hits:
+        horizontal_hits = [t for t in tiles if self.rect.colliderect(t)]
+        for tile in horizontal_hits:
             if self.vel.x > 0:
                 self.rect.right = tile.left
             elif self.vel.x < 0:
                 self.rect.left = tile.right
 
         self.rect.y += self.vel.y
-        hits = [t for t in tiles if self.rect.colliderect(t)]
+        vertical_hits = [t for t in tiles if self.rect.colliderect(t)]
         self.on_ground = False
-        for tile in hits:
+        for tile in vertical_hits:
             if self.vel.y > 0:
                 self.rect.bottom = tile.top
                 self.vel.y = 0
@@ -183,40 +208,38 @@ class Enemy(AnimatedEntity):
         super().__init__(x, y, enemy_frames)
         self.left_bound = left_bound
         self.right_bound = right_bound
-        self.vel.x = 2
+        self.vel.x = ENEMY_SPEED
         self.chase_range = chase_range
         self.is_chasing = False
         self.on_ground = False
+
+    def collide(self, tiles):
+        self.rect.y += self.vel.y
+        vertical_hits = [t for t in tiles if self.rect.colliderect(t)]
+        self.on_ground = False
+        for tile in vertical_hits:
+            if self.vel.y > 0:  # Falling down
+                self.rect.bottom = tile.top
+                self.vel.y = 0
+                self.on_ground = True
+            elif self.vel.y < 0:  # Moving up (head hit)
+                self.rect.top = tile.bottom
+                self.vel.y = 0
+
+        self.rect.x += self.vel.x
+        horizontal_hits = [t for t in tiles if self.rect.colliderect(t)]
+        for tile in horizontal_hits:
+            if self.vel.x > 0:  # Moving right
+                self.rect.right = tile.left
+                self.vel.x = -ENEMY_SPEED  # Reverse direction on collision
+            elif self.vel.x < 0:  # Moving left
+                self.rect.left = tile.right
+                self.vel.x = ENEMY_SPEED  # Reverse direction on collision
 
     def apply_gravity(self):
         self.vel.y += GRAVITY
         if self.vel.y > TILE:
             self.vel.y = TILE
-
-    def collide(self, tiles):
-        # Vertical collision
-        self.rect.y += self.vel.y
-        self.on_ground = False
-        for tile in tiles:
-            if self.rect.colliderect(tile):
-                if self.vel.y > 0:
-                    self.rect.bottom = tile.top
-                    self.vel.y = 0
-                    self.on_ground = True
-                elif self.vel.y < 0:
-                    self.rect.top = tile.bottom
-                    self.vel.y = 0
-
-        # Horizontal collision
-        self.rect.x += self.vel.x
-        for tile in tiles:
-            if self.rect.colliderect(tile):
-                if self.vel.x > 0:
-                    self.rect.right = tile.left
-                    self.vel.x *= -1
-                elif self.vel.x < 0:
-                    self.rect.left = tile.right
-                    self.vel.x *= -1
 
     def update(self, player=None, tiles=None):
         if player:
@@ -227,7 +250,7 @@ class Enemy(AnimatedEntity):
                 self.is_chasing = False
 
             if self.is_chasing:
-                self.vel.x = -2 if distance_to_player > 0 else 2
+                self.vel.x = -ENEMY_SPEED if distance_to_player > 0 else ENEMY_SPEED
             else:
                 if self.rect.left <= self.left_bound or self.rect.right >= self.right_bound:
                     self.vel.x *= -1
@@ -238,15 +261,28 @@ class Enemy(AnimatedEntity):
 
         super().update()
 
+class PowerUp(pygame.sprite.Sprite):
+    def __init__(self, x, y):
+        super().__init__()
+        self.image = powerup_img
+        self.rect = self.image.get_rect(topleft=(x, y))
+
+    def update(self):
+        pass
+
 def show_title_screen():
     original_width, original_height = title_img.get_size()
     quadrupled_title_img = pygame.transform.scale(title_img, (original_width * 4, original_height * 4))
     title_rect = quadrupled_title_img.get_rect(center=(WIDTH // 2, HEIGHT // 2))
 
+    instruction_text = font.render("Press any key to start", True, (255, 255, 255))
+    instruction_rect = instruction_text.get_rect(center=(WIDTH // 2, HEIGHT - 50))
+
     waiting = True
     while waiting:
         screen.fill((0, 0, 0))
         screen.blit(quadrupled_title_img, title_rect)
+        screen.blit(instruction_text, instruction_rect)
         pygame.display.flip()
 
         for event in pygame.event.get():
@@ -280,9 +316,15 @@ def draw_tiles(surf, tiles, camera_x):
         for x in range(0, rect.width, TILE):
             surf.blit(platform_img, (rect.x + x - camera_x, rect.y))
 
+# Updated function: draw life using images
 def draw_lives(surf, lives):
-    text = font.render(f"Lives: {lives}", True, (255, 255, 255))
-    surf.blit(text, (10, 10))
+    if lives == 3:
+        surf.blit(life3_img, (10, 10))
+    elif lives == 2:
+        surf.blit(life2_img, (10, 10))
+    elif lives == 1:
+        surf.blit(life1_img, (10, 10))
+
 
 def create_level():
     with open('Jack/level1.json', 'r') as f:
@@ -300,14 +342,30 @@ def create_level():
 
     flag_data = data["flag"]
     flag = pygame.Rect(flag_data["x"], flag_data["y"], flag_data["width"], flag_data["height"])
-    return tiles, enemies, flag
+
+    powerups = pygame.sprite.Group()
+    powerup = PowerUp(500, HEIGHT - 3 * TILE)  # Choose a better location as needed
+    powerups.add(powerup)
+
+    return tiles, enemies, flag, powerups
 
 def main():
-    show_title_screen()
 
-    tiles, enemies, flag = create_level()
+    print("Showing title screen...")
+    show_title_screen()
+    print("Loading level...")
+    tiles, enemies, flag, powerups = create_level()
+    print("Creating player...")
+
     player = Player(64, HEIGHT - 3 * TILE)
-    sprites = pygame.sprite.Group(player, *enemies)
+    sprites = pygame.sprite.Group(player, *enemies, *powerups)
+
+    player = Player(64, HEIGHT - 3 * TILE)
+    sprites = pygame.sprite.Group(player, *enemies, *powerups)
+
+    tiles, enemies, flag, powerups = create_level()
+    player = Player(64, HEIGHT - 3 * TILE)
+    sprites = pygame.sprite.Group(player, *enemies, *powerups)
 
     running = True
     while running:
@@ -337,18 +395,26 @@ def main():
         for enemy in enemies:
             if player.rect.colliderect(enemy.rect):
                 if player.vel.y > 0 and player.rect.bottom - enemy.rect.top < TILE // 2:
+                    # stomp enemy
                     enemies.remove(enemy)
                     sprites.remove(enemy)
                     player.vel.y = JUMP_VELOCITY / 1.5
                 else:
                     player.lives -= 1
-                    player.is_hurt_version = True
                     if player.lives <= 0:
                         show_game_over_screen()
                         running = False
+                        break  # important to stop checking other enemies
                     else:
                         player.rect.topleft = (64, HEIGHT - 3 * TILE)
                         player.vel = pygame.Vector2(0, 0)
+
+        for powerup in powerups:
+            if player.rect.colliderect(powerup.rect):
+                powerups.remove(powerup)
+                sprites.remove(powerup)
+                if player.lives < 3:
+                    player.lives += 1
 
         if player.rect.colliderect(flag):
             print("Level complete!")
@@ -368,10 +434,10 @@ def main():
 
         screen.blit(flag_img, flag.move(-camera_x, 0))
         draw_lives(screen, player.lives)
+        
         pygame.display.update()
 
     pygame.quit()
     sys.exit()
-
 if __name__ == "__main__":
     main()
