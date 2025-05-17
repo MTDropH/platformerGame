@@ -26,6 +26,13 @@ background_img = pygame.transform.scale(background_img_raw, (
 background_width = background_img.get_width()
 background_scroll_speed = 0.5
 
+pygame.mixer.init()
+pygame.mixer.music.load("MWT/sounds/807184__logicmoon__mirrors.wav")
+pygame.mixer.music.play(-1)
+
+jump_sound = pygame.mixer.Sound("Jack/bruh-sound-effect-2-37927.mp3")
+Titlescreen_sound = pygame.mixer.sound("")
+
 # Load images
 platform_img = pygame.transform.scale(pygame.image.load("Jack/dirt.png").convert_alpha(), (TILE, TILE))
 flag_img = pygame.transform.scale(pygame.image.load("Jack/Max final run 1.png").convert_alpha(), (TILE, 2 * TILE))
@@ -173,6 +180,8 @@ class Player(AnimatedEntity):
         if keys[pygame.K_z] and not self.is_attacking:
             self.is_attacking = True
             self.attack_timer = self.attack_cooldown
+            jump_sound.play()
+
 
     def collide(self, tiles):
         self.rect.x += self.vel.x
