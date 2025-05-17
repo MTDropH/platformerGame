@@ -19,6 +19,13 @@ pygame.display.set_caption("Max the Knight")
 clock = pygame.time.Clock()
 font = pygame.font.SysFont("Arial", 24)
 
+# Load background image and scale it to screen height
+background_img_raw = pygame.image.load("Jack/new_background.png").convert()
+background_img = pygame.transform.scale(background_img_raw, (
+    int(background_img_raw.get_width() * (HEIGHT / background_img_raw.get_height())), HEIGHT))
+background_width = background_img.get_width()
+background_scroll_speed = 0.5
+
 # Load images
 platform_img = pygame.transform.scale(pygame.image.load("Jack/dirt.png").convert_alpha(), (TILE, TILE))
 flag_img = pygame.transform.scale(pygame.image.load("Jack/Max final run 1.png").convert_alpha(), (TILE, 2 * TILE))
@@ -421,7 +428,11 @@ def main():
             running = False
 
         camera_x = max(0, min(player.rect.centerx - WIDTH // 2, LEVEL_WIDTH - WIDTH))
-        screen.fill(SKY)
+
+        # --- DRAW ---
+        for x in range(0, WIDTH * 3, background_width):
+            screen.blit(background_img, (x - camera_x * background_scroll_speed, 0))
+
         draw_tiles(screen, tiles, camera_x)
         for sprite in sprites:
             screen.blit(sprite.image, sprite.rect.move(-camera_x, 0))
@@ -434,10 +445,11 @@ def main():
 
         screen.blit(flag_img, flag.move(-camera_x, 0))
         draw_lives(screen, player.lives)
-        
+
         pygame.display.update()
 
     pygame.quit()
     sys.exit()
+
 if __name__ == "__main__":
     main()
