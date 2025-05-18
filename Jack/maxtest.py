@@ -20,84 +20,90 @@ clock = pygame.time.Clock()
 font = pygame.font.SysFont("Arial", 24)
 
 # Load background image and scale it to screen height
-background_img_raw = pygame.image.load("Jack/new_background.png").convert()
+background_img_raw = pygame.image.load("Jack/images/new_background.png").convert()
 background_img = pygame.transform.scale(background_img_raw, (
     int(background_img_raw.get_width() * (HEIGHT / background_img_raw.get_height())), HEIGHT))
 background_width = background_img.get_width()
 background_scroll_speed = 0.5
 
 pygame.mixer.init()
-pygame.mixer.music.load("MWT/sounds/807184__logicmoon__mirrors.wav")
-pygame.mixer.music.play(-1)
+# --- Load Sound Effects ---
+jump_sound = pygame.mixer.Sound("Jack/sounds/jump.mp3")
+sword_sound = pygame.mixer.Sound("Jack/sounds/sword_whoosh.mp3")
+item_sound = pygame.mixer.Sound("Jack/sounds/item_grab.mp3")
 
-jump_sound = pygame.mixer.Sound("Jack/bruh-sound-effect-2-37927.mp3")
-Titlescreen_sound = pygame.mixer.sound("")
+# --- Load Music Tracks ---
+title_music = "Jack/sounds/title_screen_music.mp3"
+level_music = "Jack/sounds/level_one_theme.mp3"
+game_over_music = "Jack/sounds/game_over.mp3"
+
 
 # Load images
-platform_img = pygame.transform.scale(pygame.image.load("Jack/dirt.png").convert_alpha(), (TILE, TILE))
-flag_img = pygame.transform.scale(pygame.image.load("Jack/Max final run 1.png").convert_alpha(), (TILE, 2 * TILE))
-title_img = pygame.image.load("Jack/max title screen.png").convert_alpha()
+platform_img = pygame.transform.scale(pygame.image.load("Jack/images/dirt.png").convert_alpha(), (TILE, TILE))
+flag_img = pygame.transform.scale(pygame.image.load("Jack/images/Max final run 1.png").convert_alpha(), (TILE, 2 * TILE))
+title_img = pygame.image.load("Jack/images/max title screen.png").convert_alpha()
 
 try:
-    game_over_img = pygame.image.load("Jack/game over.png").convert_alpha()
+    game_over_img = pygame.image.load("Jack/images/game over.png").convert_alpha()
 except:
     game_over_img = None
 
 player_run_frames = [
-    pygame.transform.scale(pygame.image.load("Jack/Max final run 1.png").convert_alpha(), (TILE, int(TILE * 2))),
-    pygame.transform.scale(pygame.image.load("Jack/Max final run 2.png").convert_alpha(), (TILE, int(TILE * 2)))
+    pygame.transform.scale(pygame.image.load("Jack/images/Max final run 1.png").convert_alpha(), (TILE, int(TILE * 2))),
+    pygame.transform.scale(pygame.image.load("Jack/images/Max final run 2.png").convert_alpha(), (TILE, int(TILE * 2)))
 ]
 
 player_idle_frames = [
-    pygame.transform.scale(pygame.image.load("Jack/Max idle 1.png").convert_alpha(), (TILE, int(TILE * 2))),
-    pygame.transform.scale(pygame.image.load("Jack/Max idle 2.png").convert_alpha(), (TILE, int(TILE * 2)))
+    pygame.transform.scale(pygame.image.load("Jack/images/Max idle 1.png").convert_alpha(), (TILE, int(TILE * 2))),
+    pygame.transform.scale(pygame.image.load("Jack/images/Max idle 2.png").convert_alpha(), (TILE, int(TILE * 2)))
 ]
 
-player_attack_frame = pygame.transform.scale(pygame.image.load("Jack/Max swing sword1.png").convert_alpha(), (TILE, int(TILE * 2)))
-sword_img = pygame.transform.scale(pygame.image.load("Jack/sword end.png").convert_alpha(), (32, 32))
+player_attack_frame = pygame.transform.scale(pygame.image.load("Jack/images/Max swing sword1.png").convert_alpha(), (TILE, int(TILE * 2)))
+sword_img = pygame.transform.scale(pygame.image.load("Jack/images/sword end.png").convert_alpha(), (32, 32))
 
 player_run_hurt_frames = [
-    pygame.transform.scale(pygame.image.load("Jack/Max run hurt1.png").convert_alpha(), (TILE, int(TILE * 2))),
-    pygame.transform.scale(pygame.image.load("Jack/Max run hurt2.png").convert_alpha(), (TILE, int(TILE * 2)))
+    pygame.transform.scale(pygame.image.load("Jack/images/Max run hurt1.png").convert_alpha(), (TILE, int(TILE * 2))),
+    pygame.transform.scale(pygame.image.load("Jack/images/Max run hurt2.png").convert_alpha(), (TILE, int(TILE * 2)))
 ]
 
 player_idle_hurt_frames = [
-    pygame.transform.scale(pygame.image.load("Jack/Max idle hurt1.png").convert_alpha(), (TILE, int(TILE * 2))),
-    pygame.transform.scale(pygame.image.load("Jack/Max idle hurt2.png").convert_alpha(), (TILE, int(TILE * 2)))
+    pygame.transform.scale(pygame.image.load("Jack/images/Max idle hurt1.png").convert_alpha(), (TILE, int(TILE * 2))),
+    pygame.transform.scale(pygame.image.load("Jack/images/Max idle hurt2.png").convert_alpha(), (TILE, int(TILE * 2)))
 ]
 
-player_attack_hurt_frame = pygame.transform.scale(pygame.image.load("Jack/Max swing sword hurt.png").convert_alpha(), (TILE, int(TILE * 2)))
+player_attack_hurt_frame = pygame.transform.scale(pygame.image.load("Jack/images/Max swing sword hurt.png").convert_alpha(), (TILE, int(TILE * 2)))
 
 # Power-up image
-powerup_img = pygame.transform.scale(pygame.image.load("Jack/armour polish.png").convert_alpha(), (TILE, TILE))
+powerup_img = pygame.transform.scale(pygame.image.load("Jack/images/armour polish.png").convert_alpha(), (TILE, TILE))
 
 # Powered-up player frames
 powered_up_idle_frames = [
-    pygame.transform.scale(pygame.image.load("Jack/Max idle super1.png").convert_alpha(), (TILE, int(TILE * 2))),
-    pygame.transform.scale(pygame.image.load("Jack/Max idle super2.png").convert_alpha(), (TILE, int(TILE * 2)))
+    pygame.transform.scale(pygame.image.load("Jack/images/Max idle super1.png").convert_alpha(), (TILE, int(TILE * 2))),
+    pygame.transform.scale(pygame.image.load("Jack/images/Max idle super2.png").convert_alpha(), (TILE, int(TILE * 2)))
 ]
 
 powered_up_run_frames = [
-    pygame.transform.scale(pygame.image.load("Jack/Max run super1.png").convert_alpha(), (TILE, int(TILE * 2))),
-    pygame.transform.scale(pygame.image.load("Jack/Max run super2.png").convert_alpha(), (TILE, int(TILE * 2)))
+    pygame.transform.scale(pygame.image.load("Jack/images/Max run super1.png").convert_alpha(), (TILE, int(TILE * 2))),
+    pygame.transform.scale(pygame.image.load("Jack/images/Max run super2.png").convert_alpha(), (TILE, int(TILE * 2)))
 ]
 
-powered_up_attack_frame = pygame.transform.scale(pygame.image.load("Jack/Max swing sword super.png").convert_alpha(), (TILE, int(TILE * 2)))
+powered_up_attack_frame = pygame.transform.scale(pygame.image.load("Jack/images/Max swing sword super.png").convert_alpha(), (TILE, int(TILE * 2)))
 
 enemy_frames = [
-    pygame.transform.scale(pygame.image.load("Jack/evil guy run1.png").convert_alpha(), (TILE, int(TILE * 2))),
-    pygame.transform.scale(pygame.image.load("Jack/evil guy run2.png").convert_alpha(), (TILE, int(TILE * 2)))
+    pygame.transform.scale(pygame.image.load("Jack/images/evil guy run1.png").convert_alpha(), (TILE, int(TILE * 2))),
+    pygame.transform.scale(pygame.image.load("Jack/images/evil guy run2.png").convert_alpha(), (TILE, int(TILE * 2)))
 ]
 # Load life images
-life1_img = pygame.image.load("Jack/health bar1.png").convert_alpha()
-life2_img = pygame.image.load("Jack/health bar2.png").convert_alpha()
-life3_img = pygame.image.load("Jack/health bar3.png").convert_alpha()
+life1_img = pygame.image.load("Jack/images/health bar1.png").convert_alpha()
+life2_img = pygame.image.load("Jack/images/health bar2.png").convert_alpha()
+life3_img = pygame.image.load("Jack/images/health bar3.png").convert_alpha()
 
 # Scale life images if needed
 life1_img = pygame.transform.scale(life1_img, (132, 64))  # adjust size
 life2_img = pygame.transform.scale(life2_img, (132, 64))
 life3_img = pygame.transform.scale(life3_img, (132, 64))
 class AnimatedEntity(pygame.sprite.Sprite):
+
     def __init__(self, x, y, frames, animation_speed=0.1):
         super().__init__()
         self.frames = frames
@@ -177,10 +183,11 @@ class Player(AnimatedEntity):
             self.facing_right = True
         if (keys[pygame.K_SPACE] or keys[pygame.K_UP]) and self.on_ground:
             self.vel.y = JUMP_VELOCITY
+            jump_sound.play()
         if keys[pygame.K_z] and not self.is_attacking:
             self.is_attacking = True
             self.attack_timer = self.attack_cooldown
-            jump_sound.play()
+            sword_sound.play()
 
 
     def collide(self, tiles):
@@ -287,10 +294,12 @@ class PowerUp(pygame.sprite.Sprite):
         pass
 
 def show_title_screen():
+    pygame.mixer.music.load(title_music)
+    pygame.mixer.music.play(-1)
+
     original_width, original_height = title_img.get_size()
     quadrupled_title_img = pygame.transform.scale(title_img, (original_width * 4, original_height * 4))
     title_rect = quadrupled_title_img.get_rect(center=(WIDTH // 2, HEIGHT // 2))
-
 
     waiting = True
     while waiting:
@@ -303,9 +312,15 @@ def show_title_screen():
                 pygame.quit()
                 sys.exit()
             if event.type == pygame.KEYDOWN:
+                pygame.mixer.music.stop()
                 waiting = False
 
 def show_game_over_screen():
+
+    pygame.mixer.music.stop()
+    pygame.mixer.music.load(game_over_music)
+    pygame.mixer.music.play()
+
     waiting = True
     while waiting:
         screen.fill((0, 0, 0))
@@ -362,11 +377,16 @@ def create_level():
 
     return tiles, enemies, flag, powerups
 
+
 def main():
 
     print("Showing title screen...")
     show_title_screen()
     print("Loading level...")
+
+    pygame.mixer.music.load(level_music)
+    pygame.mixer.music.play(-1)
+
     tiles, enemies, flag, powerups = create_level()
     print("Creating player...")
 
@@ -426,6 +446,7 @@ def main():
             if player.rect.colliderect(powerup.rect):
                 powerups.remove(powerup)
                 sprites.remove(powerup)
+                item_sound.play()
                 if player.lives < 3:
                     player.lives += 1
 
