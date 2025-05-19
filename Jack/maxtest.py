@@ -34,14 +34,21 @@ item_sound = pygame.mixer.Sound("Jack/sounds/item_grab.mp3")
 
 # --- Load Music Tracks ---
 title_music = "Jack/sounds/title_screen_music.mp3"
-level_music = "Jack/sounds/level_one_theme.mp3"
+level_music = "Jack/sounds/level_one.mp3"
 game_over_music = "Jack/sounds/game_over.mp3"
 
 
 # Load images
 platform_img = pygame.transform.scale(pygame.image.load("Jack/images/dirt.png").convert_alpha(), (TILE, TILE))
-flag_img = pygame.transform.scale(pygame.image.load("Jack/images/Max final run 1.png").convert_alpha(), (TILE, 2 * TILE))
+flag_img = pygame.transform.scale(pygame.image.load("Jack/images/flag.png").convert_alpha(), (TILE, 2 * TILE))
 title_img = pygame.image.load("Jack/images/max title screen.png").convert_alpha()
+
+# Decoration tile images by type
+decoration_images = {
+    "grass": pygame.transform.scale(pygame.image.load("Jack/images/deco_grass.png").convert_alpha(), (TILE, TILE)),
+    "stone": pygame.transform.scale(pygame.image.load("Jack/images/deco_stone.png").convert_alpha(), (TILE, TILE)),
+    # Add more types as needed
+}
 
 try:
     game_over_img = pygame.image.load("Jack/images/game over.png").convert_alpha()
@@ -339,10 +346,15 @@ def show_game_over_screen():
                 pygame.quit()
                 sys.exit()
 
-def draw_tiles(surf, tiles, camera_x):
+def draw_tiles(surf, tiles, camera_x, decorations=None):
     for rect in tiles:
         for x in range(0, rect.width, TILE):
             surf.blit(platform_img, (rect.x + x - camera_x, rect.y))
+
+    if decorations:
+        for deco in decorations:
+            image = decoration_images.get(deco["type"], platform_img)
+            surf.blit(image, (deco["rect"].x - camera_x, deco["rect"].y))
 
 # Updated function: draw life using images
 def draw_lives(surf, lives):
@@ -354,14 +366,23 @@ def draw_lives(surf, lives):
         surf.blit(life1_img, (10, 10))
 
 
-def create_level():
-    with open('Jack/level1.json', 'r') as f:
+def create_level(filename='Jack/level1.json'):
+    with open(filename, 'r') as f:
         data = json.load(f)
 
     tiles = []
     for tile_data in data["tiles"]:
         rect = pygame.Rect(tile_data["x"], tile_data["y"], tile_data["width"], tile_data["height"])
+        shrink_x = 4
+        shrink_y = 4
+        rect.inflate_ip(-2 * shrink_x, -2 * shrink_y)
         tiles.append(rect)
+
+    decorations = []
+    for deco in data.get("decorations", []):
+        rect = pygame.Rect(deco["x"], deco["y"], deco["width"], deco["height"])
+        deco_type = deco.get("type", "grass")
+        decorations.append({"rect": rect, "type": deco_type})
 
     enemies = pygame.sprite.Group()
     for enemy_data in data["enemies"]:
@@ -372,10 +393,11 @@ def create_level():
     flag = pygame.Rect(flag_data["x"], flag_data["y"], flag_data["width"], flag_data["height"])
 
     powerups = pygame.sprite.Group()
-    powerup = PowerUp(500, HEIGHT - 3 * TILE)  # Choose a better location as needed
-    powerups.add(powerup)
+    for powerup_data in data.get("powerups", []):
+        powerup = PowerUp(powerup_data["x"], powerup_data["y"])
+        powerups.add(powerup)
 
-    return tiles, enemies, flag, powerups
+    return tiles, decorations, enemies, flag, powerups
 
 
 def main():
@@ -387,16 +409,8 @@ def main():
     pygame.mixer.music.load(level_music)
     pygame.mixer.music.play(-1)
 
-    tiles, enemies, flag, powerups = create_level()
-    print("Creating player...")
+    tiles, decorations, enemies, flag, powerups = create_level('Jack/level1.json')
 
-    player = Player(64, HEIGHT - 3 * TILE)
-    sprites = pygame.sprite.Group(player, *enemies, *powerups)
-
-    player = Player(64, HEIGHT - 3 * TILE)
-    sprites = pygame.sprite.Group(player, *enemies, *powerups)
-
-    tiles, enemies, flag, powerups = create_level()
     player = Player(64, HEIGHT - 3 * TILE)
     sprites = pygame.sprite.Group(player, *enemies, *powerups)
 
@@ -412,6 +426,17 @@ def main():
         player.handle_input(keys)
         player.apply_gravity()
         player.collide(tiles)
+
+# --- Death barrier: Player falls below the screen ---
+        if player.rect.top > HEIGHT + 100:  # 100 pixels below screen
+            player.lives -= 1
+            if player.lives <= 0:
+                show_game_over_screen()
+                running = False
+                break
+            else:
+                player.rect.topleft = (64, HEIGHT - 3 * TILE)
+                player.vel = pygame.Vector2(0, 0)
 
         for enemy in enemies:
             enemy.update(player, tiles)
@@ -460,7 +485,7 @@ def main():
         for x in range(0, WIDTH * 3, background_width):
             screen.blit(background_img, (x - camera_x * background_scroll_speed, 0))
 
-        draw_tiles(screen, tiles, camera_x)
+        draw_tiles(screen, tiles, camera_x, decorations)
         for sprite in sprites:
             screen.blit(sprite.image, sprite.rect.move(-camera_x, 0))
 
