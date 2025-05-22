@@ -8,6 +8,7 @@
 
 import sys
 import pygame
+ 
 
 WIDTH, HEIGHT = 800, 448
 FPS = 60
@@ -25,6 +26,12 @@ PLAT_C   = (124, 252, 0)
 FLAG_C   = (255, 215, 0)
 
 pygame.init()
+pygame.mixer.init()
+
+death_sound = pygame.mixer.Sound("caye/thud-sound-effect-319090.mp3")
+jump_sound = pygame.mixer.Sound("MWT/sounds/686523__xupr_e3__mixkit-arcade-game-jump-coin-216.wav")
+
+
 screen = pygame.display.set_mode((WIDTH, HEIGHT))
 pygame.display.set_caption("Simple Platformer Demo")
 clock = pygame.time.Clock()
@@ -56,6 +63,7 @@ class Player(Entity):
             self.vel.x = PLAYER_SPEED
         if (keys[pygame.K_SPACE] or keys[pygame.K_UP]) and self.on_ground:
             self.vel.y = JUMP_VELOCITY
+            jump_sound.play()
 
     def apply_gravity(self):
         self.vel.y += GRAVITY
@@ -155,6 +163,7 @@ def main():
                     print("Ouch! Respawn...")
                     player.rect.topleft = (64, HEIGHT - 3*TILE)
                     player.vel = pygame.Vector2(0, 0)
+                    death_sound.play()
 
         camera_x = max(0, min(player.rect.centerx - WIDTH // 2, LEVEL_WIDTH - WIDTH))
 
