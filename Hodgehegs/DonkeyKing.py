@@ -41,8 +41,9 @@ player_idle_frames = [
     load("Hodgehegs/Mario1.png",       TILE, TILE * 2),]
 
 donkey_kong_run_frames = [
-    load("Hodgehegs/Donkey_kong_barrel.jpeg",TILE, TILE * 3),
-    load("Hodgehegs/Donkey_kong.jpeg",TILE, TILE * 3)],
+    load("Hodgehegs/Donkey_kong_barrel.jpeg",TILE*2, TILE * 3),
+    load("Hodgehegs/Donkey_kong.jpeg",TILE*2, TILE * 3)
+    ]
 
 donkey_kong_idle_frames = [
     load("Hodgehegs/Donkey_kong.jpeg",TILE, TILE * 3),]
@@ -157,6 +158,8 @@ sprites = pygame.sprite.Group(player)
 
 running       = True
 barrel_timer  = 0
+dk_tick      = 0
+dk_frame     = 0
 
 while running:
     dt = clock.tick(FPS) / 1000          # (dt available if you later need time‑based motion)
@@ -202,6 +205,12 @@ while running:
     # draw sprites (only player for now)
     for sprite in sprites:
         win.blit(sprite.image, sprite.rect)
+        
+    dk_tick += 1                           
+    if dk_tick % 12 == 0:                   
+        dk_frame = (dk_frame + 1) % len(donkey_kong_run_frames)
+
+    win.blit(donkey_kong_run_frames[dk_frame], (350, 0))
 
     pygame.display.update()
 
