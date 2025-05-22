@@ -1,5 +1,4 @@
 # This week's tasks:
-# - Make the player jump smaller, and move the platforms down and further apart
 # - Add more barrels that fall from the top of the screen
 # - Add a second level, so that when you reach the goal, you go to a new screen
 # - Add an image instead of a rectangle for the goal
@@ -23,7 +22,7 @@ GREEN          = (0, 255, 0)
 
 GRAVITY        = 1
 PLAYER_SPEED   = 5
-JUMP_VELOCITY  = -15
+JUMP_VELOCITY  = -10
 TILE           = 32                        
 
 clock = pygame.time.Clock()
@@ -39,9 +38,15 @@ player_run_frames  = [
     load("Hodgehegs/Mariorun1.png",  TILE, TILE * 2),
 ]
 player_idle_frames = [
-    load("Hodgehegs/Mario1.png",       TILE, TILE * 2),
-    load("Hodgehegs/Mariorun1.png",       TILE, TILE * 2),
-]
+    load("Hodgehegs/Mario1.png",       TILE, TILE * 2),]
+
+donkey_kong_run_frames = [
+    load("Hodgehegs/Donkey_kong_barrel.jpeg",TILE, TILE * 3),
+    load("Hodgehegs/Donkey_kong.jpeg",TILE, TILE * 3)],
+
+donkey_kong_idle_frames = [
+    load("Hodgehegs/Donkey_kong.jpeg",TILE, TILE * 3),]
+
 
 class AnimatedEntity(pygame.sprite.Sprite):
     def __init__(self, x, y, frames, animation_speed=0.1):
@@ -122,11 +127,12 @@ class Player(AnimatedEntity):
 platforms = [
     pygame.Rect(   0, HEIGHT -  20, WIDTH, 20),
     
-    pygame.Rect( 100, 400, 600, 20),
-    pygame.Rect(   0, 300, 600, 20),
-    pygame.Rect( 100, 200, 600, 20),
-    pygame.Rect(   0, 100, 600, 20),
-]
+    pygame.Rect( 100, 500, 600, 20),
+    pygame.Rect(   0, 400, 600, 20),
+    pygame.Rect( 100, 300, 600, 20),
+    pygame.Rect(   0, 200, 600, 20),
+    pygame.Rect( 100, 100, 600, 20),
+    ]
 goal = pygame.Rect(WIDTH - 60, 150, 50, 50)
 
 BARREL_SIZE  = 30
@@ -164,7 +170,7 @@ while running:
     barrel_timer += 1
     if barrel_timer > 120:               # every 2 seconds at 60 FPS
         spawn_barrel()
-        barrel_timer = 0
+        barrel_timer = -1
 
     # ── input & movement ─────────
     keys = pygame.key.get_pressed()
