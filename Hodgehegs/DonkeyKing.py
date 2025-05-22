@@ -1,10 +1,16 @@
+# This week's tasks:
+# - Make the player jump smaller, and move the platforms down and further apart
+# - Add more barrels that fall from the top of the screen
+# - Add a second level, so that when you reach the goal, you go to a new screen
+# - Add an image instead of a rectangle for the goal
+# - Add an image instead of a rectangle for the barrels
+# - Add a game over screen when the player is hit by a barrel
+# - Add a start screen
+
 import sys
 import random
 import pygame
 
-# ───────────────────────────────
-#  INITIALISATION & CONSTANTS
-# ───────────────────────────────
 pygame.init()
 
 WIDTH, HEIGHT = 800, 600
@@ -18,15 +24,12 @@ GREEN          = (0, 255, 0)
 GRAVITY        = 1
 PLAYER_SPEED   = 5
 JUMP_VELOCITY  = -15
-TILE           = 32                        # used by animation math only
+TILE           = 32                        
 
 clock = pygame.time.Clock()
 win   = pygame.display.set_mode((WIDTH, HEIGHT))
 pygame.display.set_caption("Donkey Kong")
 
-# ───────────────────────────────
-#  GRAPHICS ‑ load & scale frames
-# ───────────────────────────────
 def load(path, w, h):
     return pygame.transform.scale(pygame.image.load(path).convert_alpha(), (w, h))
 
@@ -40,9 +43,6 @@ player_idle_frames = [
     load("Hodgehegs/Mariorun1.png",       TILE, TILE * 2),
 ]
 
-# ───────────────────────────────
-#  ANIMATION CORE
-# ───────────────────────────────
 class AnimatedEntity(pygame.sprite.Sprite):
     def __init__(self, x, y, frames, animation_speed=0.1):
         super().__init__()
@@ -119,9 +119,6 @@ class Player(AnimatedEntity):
                 self.rect.top = p.bottom
                 self.vel.y = 0
 
-# ───────────────────────────────
-#  STATIC GEOMETRY
-# ───────────────────────────────
 platforms = [
     pygame.Rect(   0, HEIGHT -  20, WIDTH, 20),
     
@@ -132,9 +129,6 @@ platforms = [
 ]
 goal = pygame.Rect(WIDTH - 60, 150, 50, 50)
 
-# ───────────────────────────────
-#  BARREL MANAGEMENT
-# ───────────────────────────────
 BARREL_SIZE  = 30
 BARREL_SPEED = 4
 barrels = []
@@ -152,9 +146,6 @@ def move_and_cull_barrels():
 def hit_player(player_rect):
     return any(player_rect.colliderect(b) for b in barrels)
 
-# ───────────────────────────────
-#  GAME LOOP
-# ───────────────────────────────
 player  = Player(50, HEIGHT - player_idle_frames[0].get_height() - 10)
 sprites = pygame.sprite.Group(player)
 

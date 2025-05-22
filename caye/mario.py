@@ -1,3 +1,11 @@
+# This week's tasks:
+# - Add a backgroung image
+# - Add a game over screen
+# - Instead of a rectangle, use an image for the player
+# - Put an image for the enemies
+# - Make the game longer (maybe add a second level?)
+# - Add a 'flag' or something else to indicate the end of the level
+
 import sys
 import pygame
 
