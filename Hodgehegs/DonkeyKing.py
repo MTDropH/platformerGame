@@ -1,10 +1,6 @@
 # This week's tasks:
 # - Add more barrels that fall from the top of the screen
-# - Add a second level, so that when you reach the goal, you go to a new screen
-# - Add an image instead of a rectangle for the goal
-# - Add an image instead of a rectangle for the barrels
-# - Add a game over screen when the player is hit by a barrel
-# - Add a start screen
+
 
 import sys
 import random
