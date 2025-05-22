@@ -164,7 +164,10 @@ def main():
                     sprites.remove(enemy)
                     player.vel.y = JUMP_VELOCITY / 1.5
                 else:
-                    death_img = load("caye/gameOver.jpeg", )
+                    print("Ouch! Respawn...")
+                    player.rect.topleft = (64, HEIGHT - 3*TILE)
+                    player.vel = pygame.Vector2(0, 0)
+                    death_sound.play()
 
         camera_x = max(0, min(player.rect.centerx - WIDTH // 2, LEVEL_WIDTH - WIDTH))
 
