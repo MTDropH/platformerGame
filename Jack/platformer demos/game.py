@@ -8,7 +8,7 @@ GRAVITY = 0.5
 PLAYER_SPEED = 3
 JUMP_VELOCITY = -10
 TILE = 32
-LEVEL_WIDTH = 3392
+LEVEL_WIDTH = 3200
 ENEMY_SPEED = 1  
 
 SKY = (135, 206, 235)
@@ -312,6 +312,12 @@ def show_title_screen():
     while waiting:
         screen.fill((0, 0, 0))
         screen.blit(quadrupled_title_img, title_rect)
+
+        instruction1 = font.render("Press any key to play", True, (255, 255, 255))
+        instruction2 = font.render("Press 'E' to edit level", True, (255, 255, 0))
+        screen.blit(instruction1, (WIDTH // 2 - instruction1.get_width() // 2, HEIGHT - 60))
+        screen.blit(instruction2, (WIDTH // 2 - instruction2.get_width() // 2, HEIGHT - 30))
+
         pygame.display.flip()
 
         for event in pygame.event.get():
@@ -319,8 +325,14 @@ def show_title_screen():
                 pygame.quit()
                 sys.exit()
             if event.type == pygame.KEYDOWN:
-                pygame.mixer.music.stop()
-                waiting = False
+                if event.key == pygame.K_e:
+                    pygame.mixer.music.stop()
+                    run_level_editor()
+                    show_title_screen()  # Return to title screen after editing
+                    return
+                else:
+                    pygame.mixer.music.stop()
+                    waiting = False
 
 def show_game_over_screen():
 
@@ -373,8 +385,8 @@ def create_level(filename='Jack/level1.json'):
     tiles = []
     for tile_data in data["tiles"]:
         rect = pygame.Rect(tile_data["x"], tile_data["y"], tile_data["width"], tile_data["height"])
-        shrink_x = 2  # was 4
-        shrink_y = 3  # was 4
+        shrink_x = 4
+        shrink_y = 4
         rect.inflate_ip(-2 * shrink_x, -2 * shrink_y)
         tiles.append(rect)
 
@@ -399,6 +411,9 @@ def create_level(filename='Jack/level1.json'):
 
     return tiles, decorations, enemies, flag, powerups
 
+def run_level_editor():
+    import subprocess
+    subprocess.run([sys.executable, "level_editor.py"])
 
 def main():
 
