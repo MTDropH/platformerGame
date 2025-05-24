@@ -15,9 +15,9 @@ import sys
 # --- Setup ---
 WIDTH, HEIGHT = 640, 480
 FPS = 60
-GRAVITY = 0.6
-JUMP_VELOCITY = -12
-OBSTACLE_SPEED = 4
+GRAVITY = 2
+JUMP_VELOCITY = -1
+OBSTACLE_SPEED = 100
 
 pygame.init()
 

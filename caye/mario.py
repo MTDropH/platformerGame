@@ -1,5 +1,14 @@
+# This week's tasks:
+# - Add a backgroung image
+# - Add a game over screen
+# - Instead of a rectangle, use an image for the player
+# - Put an image for the enemies
+# - Make the game longer (maybe add a second level?)
+# - Add a 'flag' or something else to indicate the end of the level
+
 import sys
 import pygame
+
 
 WIDTH, HEIGHT = 800, 448
 FPS = 60
@@ -17,10 +26,20 @@ PLAT_C   = (124, 252, 0)
 FLAG_C   = (255, 215, 0)
 
 pygame.init()
+pygame.mixer.init()
+
 screen = pygame.display.set_mode((WIDTH, HEIGHT))
 pygame.display.set_caption("Simple Platformer Demo")
 clock = pygame.time.Clock()
 
+background_img_raw = pygame.image.load("Jack/images/new_background.png").convert()
+background_img = pygame.transform.scale(background_img_raw, (
+    int(background_img_raw.get_width() * (HEIGHT / background_img_raw.get_height())), HEIGHT))
+background_width = background_img.get_width()
+background_scroll_speed = 0.5
+
+death_sound = pygame.mixer.Sound("caye/thud-sound-effect-319090.mp3")
+jump_sound = pygame.mixer.Sound("MWT/sounds/686523__xupr_e3__mixkit-arcade-game-jump-coin-216.wav")
 
 class Entity(pygame.sprite.Sprite):
     def __init__(self, x, y, w, h, colour):
@@ -48,6 +67,7 @@ class Player(Entity):
             self.vel.x = PLAYER_SPEED
         if (keys[pygame.K_SPACE] or keys[pygame.K_UP]) and self.on_ground:
             self.vel.y = JUMP_VELOCITY
+            jump_sound.play()
 
     def apply_gravity(self):
         self.vel.y += GRAVITY
@@ -147,10 +167,13 @@ def main():
                     print("Ouch! Respawn...")
                     player.rect.topleft = (64, HEIGHT - 3*TILE)
                     player.vel = pygame.Vector2(0, 0)
+                    death_sound.play()
 
         camera_x = max(0, min(player.rect.centerx - WIDTH // 2, LEVEL_WIDTH - WIDTH))
 
-        screen.fill(SKY)
+        
+        for x in range(0, WIDTH * 3, background_width):
+            screen.blit(background_img, (x - camera_x * background_scroll_speed, 0))
         draw_tiles(screen, tiles, camera_x)
         for sprite in sprites:
             screen.blit(sprite.image, sprite.rect.move(-camera_x, 0))

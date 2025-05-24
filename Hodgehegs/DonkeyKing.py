@@ -1,10 +1,11 @@
+# This week's tasks:
+# - Add more barrels that fall from the top of the screen
+
+
 import sys
 import random
 import pygame
 
-# ───────────────────────────────
-#  INITIALISATION & CONSTANTS
-# ───────────────────────────────
 pygame.init()
 
 WIDTH, HEIGHT = 800, 600
@@ -17,16 +18,13 @@ GREEN          = (0, 255, 0)
 
 GRAVITY        = 1
 PLAYER_SPEED   = 5
-JUMP_VELOCITY  = -15
-TILE           = 32                        # used by animation math only
+JUMP_VELOCITY  = -10
+TILE           = 32                        
 
 clock = pygame.time.Clock()
 win   = pygame.display.set_mode((WIDTH, HEIGHT))
 pygame.display.set_caption("Donkey Kong")
 
-# ───────────────────────────────
-#  GRAPHICS ‑ load & scale frames
-# ───────────────────────────────
 def load(path, w, h):
     return pygame.transform.scale(pygame.image.load(path).convert_alpha(), (w, h))
 
@@ -36,13 +34,17 @@ player_run_frames  = [
     load("Hodgehegs/Mariorun1.png",  TILE, TILE * 2),
 ]
 player_idle_frames = [
-    load("Hodgehegs/Mario1.png",       TILE, TILE * 2),
-    load("Hodgehegs/Mariorun1.png",       TILE, TILE * 2),
-]
+    load("Hodgehegs/Mario1.png",       TILE, TILE * 2),]
 
-# ───────────────────────────────
-#  ANIMATION CORE
-# ───────────────────────────────
+donkey_kong_run_frames = [
+    load("Hodgehegs/Donkey_kong_barrel.jpeg",TILE*2, TILE * 3),
+    load("Hodgehegs/Donkey_kong.jpeg",TILE*2, TILE * 3)
+    ]
+
+donkey_kong_idle_frames = [
+    load("Hodgehegs/Donkey_kong.jpeg",TILE, TILE * 3),]
+
+
 class AnimatedEntity(pygame.sprite.Sprite):
     def __init__(self, x, y, frames, animation_speed=0.1):
         super().__init__()
@@ -119,22 +121,17 @@ class Player(AnimatedEntity):
                 self.rect.top = p.bottom
                 self.vel.y = 0
 
-# ───────────────────────────────
-#  STATIC GEOMETRY
-# ───────────────────────────────
 platforms = [
     pygame.Rect(   0, HEIGHT -  20, WIDTH, 20),
     
-    pygame.Rect( 100, 400, 600, 20),
-    pygame.Rect(   0, 300, 600, 20),
-    pygame.Rect( 100, 200, 600, 20),
-    pygame.Rect(   0, 100, 600, 20),
-]
+    pygame.Rect( 100, 500, 600, 20),
+    pygame.Rect(   0, 400, 600, 20),
+    pygame.Rect( 100, 300, 600, 20),
+    pygame.Rect(   0, 200, 600, 20),
+    pygame.Rect( 100, 100, 600, 20),
+    ]
 goal = pygame.Rect(WIDTH - 60, 150, 50, 50)
 
-# ───────────────────────────────
-#  BARREL MANAGEMENT
-# ───────────────────────────────
 BARREL_SIZE  = 30
 BARREL_SPEED = 4
 barrels = []
@@ -152,14 +149,13 @@ def move_and_cull_barrels():
 def hit_player(player_rect):
     return any(player_rect.colliderect(b) for b in barrels)
 
-# ───────────────────────────────
-#  GAME LOOP
-# ───────────────────────────────
 player  = Player(50, HEIGHT - player_idle_frames[0].get_height() - 10)
 sprites = pygame.sprite.Group(player)
 
 running       = True
 barrel_timer  = 0
+dk_tick      = 0
+dk_frame     = 0
 
 while running:
     dt = clock.tick(FPS) / 1000          # (dt available if you later need time‑based motion)
@@ -173,7 +169,7 @@ while running:
     barrel_timer += 1
     if barrel_timer > 120:               # every 2 seconds at 60 FPS
         spawn_barrel()
-        barrel_timer = 0
+        barrel_timer = -1
 
     # ── input & movement ─────────
     keys = pygame.key.get_pressed()
@@ -205,6 +201,12 @@ while running:
     # draw sprites (only player for now)
     for sprite in sprites:
         win.blit(sprite.image, sprite.rect)
+        
+    dk_tick += 1                           
+    if dk_tick % 12 == 0:                   
+        dk_frame = (dk_frame + 1) % len(donkey_kong_run_frames)
+
+    win.blit(donkey_kong_run_frames[dk_frame], (350, 0))
 
     pygame.display.update()
 
