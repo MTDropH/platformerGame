@@ -1,6 +1,12 @@
 import sys
 import pygame
 
+pygame.mixer.init()
+pygame.mixer.music.load("MWT/sounds/807184__logicmoon__mirrors.wav")
+pygame.mixer.music.play(-1)
+
+jump_sound = pygame.mixer.Sound("MWT/sounds/686523__xupr_e3__mixkit-arcade-game-jump-coin-216.wav")
+
 WIDTH, HEIGHT = 800, 448
 FPS = 60
 GRAVITY = 0.5
@@ -48,6 +54,7 @@ class Player(Entity):
             self.vel.x = PLAYER_SPEED
         if (keys[pygame.K_SPACE] or keys[pygame.K_UP]) and self.on_ground:
             self.vel.y = JUMP_VELOCITY
+            jump_sound.play
 
     def apply_gravity(self):
         self.vel.y += GRAVITY
