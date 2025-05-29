@@ -19,6 +19,7 @@ pygame.display.set_caption("Max the Knight")
 clock = pygame.time.Clock()
 font = pygame.font.SysFont("Arial", 24)
 
+
 # Load background image and scale it to screen height
 background_img_raw = pygame.image.load("Jack/images/new_background.png").convert()
 background_img = pygame.transform.scale(background_img_raw, (
@@ -272,18 +273,9 @@ class Enemy(AnimatedEntity):
             self.vel.y = TILE
 
     def update(self, player=None, tiles=None):
-        if player:
-            distance_to_player = self.rect.centerx - player.rect.centerx
-            if abs(distance_to_player) < self.chase_range:
-                self.is_chasing = True
-            else:
-                self.is_chasing = False
-
-            if self.is_chasing:
-                self.vel.x = -ENEMY_SPEED if distance_to_player > 0 else ENEMY_SPEED
-            else:
-                if self.rect.left <= self.left_bound or self.rect.right >= self.right_bound:
-                    self.vel.x *= -1
+        # Enemy patrols between left_bound and right_bound
+        if self.rect.left <= self.left_bound or self.rect.right >= self.right_bound:
+            self.vel.x *= -1  # Reverse direction when reaching bounds
 
         self.apply_gravity()
         if tiles:
@@ -373,8 +365,8 @@ def create_level(filename='Jack/level1.json'):
     tiles = []
     for tile_data in data["tiles"]:
         rect = pygame.Rect(tile_data["x"], tile_data["y"], tile_data["width"], tile_data["height"])
-        shrink_x = 2  # was 4
-        shrink_y = 3  # was 4
+        shrink_x = 1  # was 4
+        shrink_y = 1  # was 4
         rect.inflate_ip(-2 * shrink_x, -2 * shrink_y)
         tiles.append(rect)
 
