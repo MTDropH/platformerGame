@@ -118,15 +118,15 @@ while running:
                     if mode == "tile":
                         tiles.append(pygame.Rect(grid_x, grid_y, TILE, TILE))
                     elif mode == "grass":
-                        decorations.append({"x": grid_x, "y": grid_y + 8, "type": "grass"})
+                        decorations.append({"x": grid_x, "y": grid_y, "type": "grass"})
                     elif mode == "stone":
-                        decorations.append({"x": grid_x, "y": grid_y + 4, "type": "stone"})  # stone shifted up
+                        decorations.append({"x": grid_x, "y": grid_y, "type": "stone"})
                     elif mode == "enemy":
                         enemies.append({"x": grid_x, "y": grid_y})
                     elif mode == "powerup":
                         powerups.append({"x": grid_x, "y": grid_y})
                     elif mode == "flag":
-                        flag = pygame.Rect(grid_x, grid_y - TILE + 4, TILE, TILE * 2)  # flag lower
+                        flag = pygame.Rect(grid_x, grid_y, TILE, TILE * 2)
 
     pygame.display.flip()
     clock.tick(60)

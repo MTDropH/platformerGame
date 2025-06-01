@@ -5,11 +5,11 @@ import json
 WIDTH, HEIGHT = 800, 448
 FPS = 60
 GRAVITY = 0.5
-PLAYER_SPEED = 3
+PLAYER_SPEED = 2
 JUMP_VELOCITY = -10
 TILE = 32
 LEVEL_WIDTH = 3392
-ENEMY_SPEED = 1  
+ENEMY_SPEED = 1 
 
 SKY = (135, 206, 235)
 
@@ -60,6 +60,18 @@ player_run_frames = [
     pygame.transform.scale(pygame.image.load("Jack/images/Max final run 1.png").convert_alpha(), (TILE, int(TILE * 2))),
     pygame.transform.scale(pygame.image.load("Jack/images/Max final run 2.png").convert_alpha(), (TILE, int(TILE * 2)))
 ]
+
+player_jump_frame = pygame.transform.scale(pygame.image.load("Jack/images/Max_jump.png").convert_alpha(),(TILE, int(TILE * 2)))
+
+powered_up_jump_frame = pygame.transform.scale(
+    pygame.image.load("Jack/images/Max_jump_super.png").convert_alpha(),
+    (TILE, int(TILE * 2))
+)
+
+player_jump_hurt_frame = pygame.transform.scale(
+    pygame.image.load("Jack/images/Max_jump_hurt.png").convert_alpha(),
+    (TILE, int(TILE * 2))
+)
 
 player_idle_frames = [
     pygame.transform.scale(pygame.image.load("Jack/images/Max idle 1.png").convert_alpha(), (TILE, int(TILE * 2))),
@@ -120,6 +132,10 @@ class AnimatedEntity(pygame.sprite.Sprite):
         self.vel = pygame.Vector2(0, 0)
         self.animation_speed = animation_speed
         self.frame_index = 0
+        self.invincible = False
+        self.invincibility_timer = 0
+        self.hurt_knockback = pygame.Vector2(0, 0)
+
 
     def animate(self):
         self.frame_index += self.animation_speed
@@ -158,6 +174,13 @@ class Player(AnimatedEntity):
 
         if self.is_attacking:
             image = attack_frame
+        elif not self.on_ground:
+            if self.lives == 3:
+                image = powered_up_jump_frame
+            elif self.lives == 2:
+                image = player_jump_frame
+            else:  # lives == 1
+                image = player_jump_hurt_frame
         else:
             if self.vel.x == 0:
                 self.frames = idle_frames
@@ -173,6 +196,11 @@ class Player(AnimatedEntity):
 
         if not self.facing_right:
             image = pygame.transform.flip(image, True, False)
+            
+        if self.invincible and int(pygame.time.get_ticks() / 100) % 2 == 0:
+            self.image.set_alpha(128)  # Flicker on
+        else:
+            self.image.set_alpha(255)  # Flicker off / normal
 
         self.image = image
 
@@ -199,25 +227,28 @@ class Player(AnimatedEntity):
 
 
     def collide(self, tiles):
+        # 1. Horizontal movement first
         self.rect.x += self.vel.x
-        horizontal_hits = [t for t in tiles if self.rect.colliderect(t)]
-        for tile in horizontal_hits:
-            if self.vel.x > 0:
-                self.rect.right = tile.left
-            elif self.vel.x < 0:
-                self.rect.left = tile.right
+        for tile in tiles:
+            if self.rect.colliderect(tile):
+                if self.vel.x > 0:
+                    self.rect.right = tile.left  # Hit wall from left
+                elif self.vel.x < 0:
+                    self.rect.left = tile.right  # Hit wall from right
+                self.vel.x = 0
 
+        # 2. Then vertical movement
         self.rect.y += self.vel.y
-        vertical_hits = [t for t in tiles if self.rect.colliderect(t)]
         self.on_ground = False
-        for tile in vertical_hits:
-            if self.vel.y > 0:
-                self.rect.bottom = tile.top
-                self.vel.y = 0
-                self.on_ground = True
-            elif self.vel.y < 0:
-                self.rect.top = tile.bottom
-                self.vel.y = 0
+        for tile in tiles:
+            if self.rect.colliderect(tile):
+                if self.vel.y > 0:
+                    self.rect.bottom = tile.top  # Land on tile
+                    self.vel.y = 0
+                    self.on_ground = True
+                elif self.vel.y < 0:
+                    self.rect.top = tile.bottom  # Hit head on ceiling
+                    self.vel.y = 0
 
     def get_attack_hitbox(self):
         if self.is_attacking:
@@ -232,7 +263,21 @@ class Player(AnimatedEntity):
             self.attack_timer -= 1 / FPS
             if self.attack_timer <= 0:
                 self.is_attacking = False
-        super().update()
+
+        # Handle invincibility timer
+        if self.invincible:
+            self.invincibility_timer -= 1 / FPS
+            if self.invincibility_timer <= 0:
+                self.invincible = False
+
+        # Apply knockback, if any
+        if self.hurt_knockback.length_squared() > 0:
+            self.vel = self.hurt_knockback
+            self.hurt_knockback *= 0.9  # Slow down over time
+            if self.hurt_knockback.length() < 0.5:
+                self.hurt_knockback = pygame.Vector2(0, 0)
+
+        super().update()  # Continue with animation + position updates
 
 class Enemy(AnimatedEntity):
     def __init__(self, x, y, left_bound, right_bound, chase_range=200):
@@ -277,11 +322,23 @@ class Enemy(AnimatedEntity):
         if self.rect.left <= self.left_bound or self.rect.right >= self.right_bound:
             self.vel.x *= -1  # Reverse direction when reaching bounds
 
+        # Flip sprite based on direction
+        self.frame_index += self.animation_speed
+        if self.frame_index >= len(self.frames):
+            self.frame_index = 0
+        frame = self.frames[int(self.frame_index)]
+
+        if self.vel.x > 0:
+            self.image = frame
+        else:
+            self.image = pygame.transform.flip(frame, True, False)
+
         self.apply_gravity()
         if tiles:
             self.collide(tiles)
 
-        super().update()
+        self.rect.x += self.vel.x
+        self.rect.y += self.vel.y
 
 class PowerUp(pygame.sprite.Sprite):
     def __init__(self, x, y):
@@ -365,9 +422,7 @@ def create_level(filename='Jack/level1.json'):
     tiles = []
     for tile_data in data["tiles"]:
         rect = pygame.Rect(tile_data["x"], tile_data["y"], tile_data["width"], tile_data["height"])
-        shrink_x = 1  # was 4
-        shrink_y = 1  # was 4
-        rect.inflate_ip(-2 * shrink_x, -2 * shrink_y)
+
         tiles.append(rect)
 
     decorations = []
@@ -444,20 +499,23 @@ def main():
 
         for enemy in enemies:
             if player.rect.colliderect(enemy.rect):
-                if player.vel.y > 0 and player.rect.bottom - enemy.rect.top < TILE // 2:
+                if player.vel.y > 0 and player.rect.bottom - enemy.rect.top < TILE * 0.75:
                     # stomp enemy
                     enemies.remove(enemy)
                     sprites.remove(enemy)
                     player.vel.y = JUMP_VELOCITY / 1.5
                 else:
-                    player.lives -= 1
-                    if player.lives <= 0:
-                        show_game_over_screen()
-                        running = False
-                        break  # important to stop checking other enemies
-                    else:
-                        player.rect.topleft = (64, HEIGHT - 3 * TILE)
-                        player.vel = pygame.Vector2(0, 0)
+                    if not player.invincible:
+                        player.lives -= 1
+                        player.invincible = True
+                        player.invincibility_timer = 1.0
+                        direction = 1 if player.rect.centerx < enemy.rect.centerx else -1
+                        player.hurt_knockback = pygame.Vector2(-direction * 6, -6)
+
+                        if player.lives <= 0:
+                            show_game_over_screen()
+                            running = False
+                            break
 
         for powerup in powerups:
             if player.rect.colliderect(powerup.rect):
