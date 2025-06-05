@@ -12,22 +12,40 @@ pygame.display.set_caption("Level Editor")
 clock = pygame.time.Clock()
 font = pygame.font.SysFont("Arial", 20)
 
-# Load images
-platform_img = pygame.transform.scale(pygame.image.load("Jack/images/dirt.png").convert_alpha(), (TILE, TILE))
-flag_img = pygame.transform.scale(pygame.image.load("Jack/images/flag.png").convert_alpha(), (TILE, TILE * 2))
-powerup_img = pygame.transform.scale(pygame.image.load("Jack/images/armour polish.png").convert_alpha(), (TILE, TILE))
-grass_img = pygame.transform.scale(pygame.image.load("Jack/images/deco_grass.png").convert_alpha(), (TILE, TILE))
-stone_img = pygame.transform.scale(pygame.image.load("Jack/images/deco_stone.png").convert_alpha(), (TILE, TILE))
+# --- Load Level 1 + Level 2 Images ---
+def load_images_for_level(level):
+    if level == 1:
+        return {
+            "platform": pygame.transform.scale(pygame.image.load("Jack/images/dirt.png").convert_alpha(), (TILE, TILE)),
+            "stone_dirt": pygame.transform.scale(pygame.image.load("Jack/images/stone_dirt.png").convert_alpha(), (TILE, TILE)),
+            "flag": pygame.transform.scale(pygame.image.load("Jack/images/flag.png").convert_alpha(), (TILE * 1, TILE * 2)),
+            "powerup": pygame.transform.scale(pygame.image.load("Jack/images/armour polish.png").convert_alpha(), (TILE, TILE)),
+            "bow_powerup": pygame.transform.scale(pygame.image.load("Jack/images/bow_power_up.png").convert_alpha(), (TILE, TILE)),
+            "grass": pygame.transform.scale(pygame.image.load("Jack/images/deco_grass.png").convert_alpha(), (TILE, TILE)),
+            "stone": pygame.transform.scale(pygame.image.load("Jack/images/deco_stone.png").convert_alpha(), (TILE, TILE)),
+        }
+    elif level == 2:
+        return {
+            "platform": pygame.transform.scale(pygame.image.load("Jack/images/level_2_dirt.png").convert_alpha(), (TILE, TILE)),
+            "stone_dirt": pygame.transform.scale(pygame.image.load("Jack/images/level_2_stone_dirt.png").convert_alpha(), (TILE, TILE)),
+            "flag": pygame.transform.scale(pygame.image.load("Jack/images/level_2_flag.png").convert_alpha(), (TILE, TILE * 2)),
+            "powerup": pygame.transform.scale(pygame.image.load("Jack/images/armour polish.png").convert_alpha(), (TILE, TILE)),
+            "bow_powerup": pygame.transform.scale(pygame.image.load("Jack/images/bow_power_up.png").convert_alpha(), (TILE, TILE)),
+            "grass": pygame.transform.scale(pygame.image.load("Jack/images/level_2_deco_1.png").convert_alpha(), (TILE, TILE)),
+            "stone": pygame.transform.scale(pygame.image.load("Jack/images/level_2_deco_2.png").convert_alpha(), (TILE, TILE)),
+        }
 
-# Data
+current_level = 1
+images = load_images_for_level(current_level)
+
+# --- Editor State ---
 tiles = []
 decorations = []
 enemies = []
 powerups = []
 flag = None
-
 camera_x = 0
-mode = 'tile'  # tile, grass, stone, enemy, powerup, flag, delete
+mode = 'tile'
 
 def draw_grid():
     for x in range(0, LEVEL_WIDTH, TILE):
@@ -36,23 +54,55 @@ def draw_grid():
         pygame.draw.line(screen, (200, 200, 200), (0, y), (WIDTH, y))
 
 def draw_toolbar():
-    modes = ["tile", "grass", "stone", "enemy", "powerup", "flag", "delete"]
+    modes = ["tile", "stone_dirt", "grass", "stone", "enemy", "powerup", "bow_powerup", "flag", "delete"]
     for i, m in enumerate(modes):
         color = (255, 255, 0) if m == mode else (255, 255, 255)
         label = font.render(m, True, color)
-        screen.blit(label, (10 + i * 100, HEIGHT - 30))
+        screen.blit(label, (10 + i * 100, 10))
 
-def save_level(filename='Jack/level1.json'):
+    # Show current level
+    level_label = font.render(f"Editing Level {current_level}", True, (255, 255, 255))
+    screen.blit(level_label, (10, HEIGHT - 30))
+
+def save_level():
+    filename = f"Jack/level{current_level}.json"
     data = {
-        "tiles": [{"x": r.x, "y": r.y, "width": r.width, "height": r.height} for r in tiles],
+        "tiles": [{"x": t["rect"].x, "y": t["rect"].y, "width": TILE, "height": TILE, "type": t["type"]} for t in tiles],
         "decorations": [{"x": d["x"], "y": d["y"], "width": TILE, "height": TILE, "type": d["type"]} for d in decorations],
         "enemies": [{"x": e["x"], "y": e["y"], "left_bound": e["x"] - 64, "right_bound": e["x"] + 64} for e in enemies],
-        "powerups": [{"x": p["x"], "y": p["y"]} for p in powerups],
+        "powerups": [{"x": p["x"], "y": p["y"], "type": p.get("type", "armor")} for p in powerups],
         "flag": {"x": flag.x if flag else 0, "y": flag.y if flag else 0, "width": TILE, "height": TILE * 2}
     }
     with open(filename, "w") as f:
         json.dump(data, f, indent=2)
     print("Level saved to", filename)
+
+def clear_level_data():
+    global tiles, decorations, enemies, powerups, flag
+    tiles = []
+    decorations = []
+    enemies = []
+    powerups = []
+    flag = None
+
+def load_level():
+    global tiles, decorations, enemies, powerups, flag
+    clear_level_data()
+    filename = f"Jack/level{current_level}.json"
+    try:
+        with open(filename, "r") as f:
+            data = json.load(f)
+        tiles = [{"rect": pygame.Rect(t["x"], t["y"], TILE, TILE), "type": t["type"]} for t in data.get("tiles", [])]
+        decorations = data.get("decorations", [])
+        enemies = data.get("enemies", [])
+        powerups = [{"x": p["x"], "y": p["y"], "type": p.get("type", "armor")} for p in data.get("powerups", [])]
+        f_data = data.get("flag", None)
+        if f_data:
+            flag = pygame.Rect(f_data["x"], f_data["y"], TILE, TILE * 2)
+    except FileNotFoundError:
+        print(f"No file for level {current_level}, starting fresh.")
+
+load_level()
 
 running = True
 while running:
@@ -60,17 +110,21 @@ while running:
     draw_grid()
     draw_toolbar()
 
-    for rect in tiles:
-        screen.blit(platform_img, (rect.x - camera_x, rect.y))
+    for tile in tiles:
+        img = images["platform"] if tile["type"] == "dirt" else images["stone_dirt"]
+        screen.blit(img, (tile["rect"].x - camera_x, tile["rect"].y))
     for d in decorations:
-        img = grass_img if d["type"] == "grass" else stone_img
+        img = images["grass"] if d["type"] == "grass" else images["stone"]
         screen.blit(img, (d["x"] - camera_x, d["y"]))
     for e in enemies:
         pygame.draw.rect(screen, (255, 0, 0), pygame.Rect(e["x"] - camera_x, e["y"], TILE, TILE * 2))
     for p in powerups:
-        screen.blit(powerup_img, (p["x"] - camera_x, p["y"]))
+        if p.get("type") == "bow":
+            screen.blit(images["bow_powerup"], (p["x"] - camera_x, p["y"]))
+        else:
+            screen.blit(images["powerup"], (p["x"] - camera_x, p["y"]))
     if flag:
-        screen.blit(flag_img, (flag.x - camera_x, flag.y))
+        screen.blit(images["flag"], (flag.x - camera_x, flag.y))
 
     for event in pygame.event.get():
         if event.type == pygame.QUIT:
@@ -81,24 +135,23 @@ while running:
                 save_level()
             if event.key == pygame.K_ESCAPE:
                 running = False
-            if event.key == pygame.K_1:
-                mode = 'tile'
-            if event.key == pygame.K_2:
-                mode = 'grass'
-            if event.key == pygame.K_3:
-                mode = 'stone'
-            if event.key == pygame.K_4:
-                mode = 'enemy'
-            if event.key == pygame.K_5:
-                mode = 'powerup'
-            if event.key == pygame.K_6:
-                mode = 'flag'
-            if event.key == pygame.K_7:
-                mode = 'delete'
+            if event.key == pygame.K_1: mode = 'tile'
+            if event.key == pygame.K_2: mode = 'stone_dirt'
+            if event.key == pygame.K_3: mode = 'grass'
+            if event.key == pygame.K_4: mode = 'stone'
+            if event.key == pygame.K_5: mode = 'enemy'
+            if event.key == pygame.K_6: mode = 'powerup'
+            if event.key == pygame.K_7: mode = 'bow_powerup'
+            if event.key == pygame.K_8: mode = 'flag'
+            if event.key == pygame.K_9: mode = 'delete'
             if event.key == pygame.K_LEFT:
                 camera_x = max(0, camera_x - 64)
             if event.key == pygame.K_RIGHT:
                 camera_x = min(LEVEL_WIDTH - WIDTH, camera_x + 64)
+            if event.key == pygame.K_l:
+                current_level = 2 if current_level == 1 else 1
+                images = load_images_for_level(current_level)
+                load_level()
 
         elif event.type == pygame.MOUSEBUTTONDOWN:
             mx, my = pygame.mouse.get_pos()
@@ -107,16 +160,20 @@ while running:
             grid_y = my // TILE * TILE
 
             if mode == "delete":
-                tiles = [r for r in tiles if not r.collidepoint(wx, grid_y)]
-                decorations = [d for d in decorations if not (d["x"] == grid_x and d["y"] == grid_y + 8)]
+                tiles = [t for t in tiles if not t["rect"].collidepoint(wx, grid_y)]
+                decorations = [d for d in decorations if not (d["x"] == grid_x and d["y"] == grid_y)]
                 enemies = [e for e in enemies if not (e["x"] == grid_x and e["y"] == grid_y)]
                 powerups = [p for p in powerups if not (p["x"] == grid_x and p["y"] == grid_y)]
                 if flag and flag.collidepoint(wx, grid_y):
                     flag = None
             else:
-                if event.button == 1:  # Left click - add
-                    if mode == "tile":
-                        tiles.append(pygame.Rect(grid_x, grid_y, TILE, TILE))
+                if event.button == 1:
+                    if mode in ["tile", "stone_dirt"]:
+                        tile_type = "dirt" if mode == "tile" else "stone_dirt"
+                        tiles.append({
+                            "rect": pygame.Rect(grid_x, grid_y, TILE, TILE),
+                            "type": tile_type
+                        })
                     elif mode == "grass":
                         decorations.append({"x": grid_x, "y": grid_y, "type": "grass"})
                     elif mode == "stone":
@@ -124,7 +181,9 @@ while running:
                     elif mode == "enemy":
                         enemies.append({"x": grid_x, "y": grid_y})
                     elif mode == "powerup":
-                        powerups.append({"x": grid_x, "y": grid_y})
+                        powerups.append({"x": grid_x, "y": grid_y, "type": "armor"})
+                    elif mode == "bow_powerup":
+                        powerups.append({"x": grid_x, "y": grid_y, "type": "bow"})
                     elif mode == "flag":
                         flag = pygame.Rect(grid_x, grid_y, TILE, TILE * 2)
 
