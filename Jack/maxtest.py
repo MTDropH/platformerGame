@@ -111,7 +111,7 @@ platform_images = {
 }
 
 flag_img = pygame.transform.scale(pygame.image.load("Jack/images/flag.png").convert_alpha(), (TILE, 2 * TILE))
-title_img = pygame.image.load("Jack/images/max title screen.png").convert_alpha()
+title_img = pygame.image.load("Jack/images/new_title_screen.png").convert_alpha()
 
 # Decoration tile images by type
 decoration_images = {
@@ -121,7 +121,7 @@ decoration_images = {
 }
 
 try:
-    game_over_img = pygame.image.load("Jack/images/game over.png").convert_alpha()
+    game_over_img = pygame.image.load("Jack/images/fixed_game_over.png").convert_alpha()
 except:
     game_over_img = None
 
@@ -490,11 +490,10 @@ def show_title_screen():
                 pygame.quit()
                 sys.exit()
             if event.type == pygame.KEYDOWN:
-                pygame.mixer.music.stop()
-                waiting = False
-
+                if event.key == pygame.K_RETURN:  # Only start on Enter
+                    pygame.mixer.music.stop()
+                    waiting = False
 def show_game_over_screen():
-
     pygame.mixer.music.stop()
     pygame.mixer.music.load(game_over_music)
     pygame.mixer.music.play()
@@ -507,15 +506,22 @@ def show_game_over_screen():
             screen.blit(img, (0, 0))
         else:
             game_over_text = font.render("GAME OVER", True, (255, 0, 0))
-            instruction = font.render("Press any key to exit...", True, (255, 255, 255))
+            restart_text = font.render("Press R to restart or ESC to quit", True, (255, 255, 255))
             screen.blit(game_over_text, (WIDTH // 2 - game_over_text.get_width() // 2, HEIGHT // 2 - 40))
-            screen.blit(instruction, (WIDTH // 2 - instruction.get_width() // 2, HEIGHT // 2 + 10))
+            screen.blit(restart_text, (WIDTH // 2 - restart_text.get_width() // 2, HEIGHT // 2 + 10))
         pygame.display.flip()
 
         for event in pygame.event.get():
-            if event.type == pygame.QUIT or event.type == pygame.KEYDOWN:
+            if event.type == pygame.QUIT:
                 pygame.quit()
                 sys.exit()
+            if event.type == pygame.KEYDOWN:
+                if event.key == pygame.K_r:
+                    return True  # Restart
+                elif event.key == pygame.K_ESCAPE:
+                    pygame.quit()
+                    sys.exit()
+    return False
 
 def show_level_complete_screen():
     pygame.mixer.music.stop()
@@ -616,7 +622,7 @@ def main(level_number=1):
 
     player = Player(64, HEIGHT - 3 * TILE)
 
-    # 🟢 FIX: initialize arrow group early
+
     player.arrow_group = pygame.sprite.Group()
 
     sprites = pygame.sprite.Group(player, *enemies, *powerups)
@@ -639,7 +645,9 @@ def main(level_number=1):
         if player.rect.top > HEIGHT + 100:  # 100 pixels below screen
             player.lives -= 1
             if player.lives <= 0:
-                show_game_over_screen()
+                restart = show_game_over_screen()
+                if restart:
+                    main(level_number=1)  # Restart from level 1
                 running = False
                 break
             else:
