@@ -1,5 +1,4 @@
 # This week's tasks:
-# - Add a backgroung image
 # - Add a game over screen
 # - Instead of a rectangle, use an image for the player
 # - Put an image for the enemies
@@ -17,6 +16,8 @@ PLAYER_SPEED = 4
 JUMP_VELOCITY = -10
 TILE = 32
 LEVEL_WIDTH = 1600
+global LIVES
+LIVES = 1
 
 SKY      = (0, 0, 201)
 GROUND   = (0, 194, 0)
@@ -58,6 +59,7 @@ class Player(Entity):
     def __init__(self, x, y):
         super().__init__(x, y, TILE, int(TILE * 1.5), PLAYER_C)
         self.on_ground = False
+        self.LIVES = 3
 
     def handle_input(self, keys):
         self.vel.x = 0
@@ -163,11 +165,15 @@ def main():
                     enemies.remove(enemy)
                     sprites.remove(enemy)
                     player.vel.y = JUMP_VELOCITY / 1.5
+                    player.LIVES += 1
                 else:
                     print("Ouch! Respawn...")
                     player.rect.topleft = (64, HEIGHT - 3*TILE)
                     player.vel = pygame.Vector2(0, 0)
                     death_sound.play()
+                    player.LIVES-=1
+                    if player.LIVES < 1:
+                        running = False
 
         camera_x = max(0, min(player.rect.centerx - WIDTH // 2, LEVEL_WIDTH - WIDTH))
 
