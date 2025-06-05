@@ -1,0 +1,9 @@
+Make a short program that assk the user for their name and age.
+
+It should then print out:
+- a random number less than the user's age
+- a randomly selected 'fortune' (like from a fortune cookie)
+
+Hints:
+Use the random module
+You could make a list of predictions then random.choice(list) to select one
