@@ -97,11 +97,12 @@ pygame.mixer.init()
 jump_sound = pygame.mixer.Sound("Jack/sounds/jump.mp3")
 sword_sound = pygame.mixer.Sound("Jack/sounds/sword_whoosh.mp3")
 item_sound = pygame.mixer.Sound("Jack/sounds/item_grab.mp3")
+bow_sound = pygame.mixer.Sound("Jack/sounds/bow_shoot.mp3")
 
 # --- Load Music Tracks ---
-title_music = "Jack/sounds/title_screen_music.mp3"
+title_music = "Jack/sounds/title_screen.mp3"
 level_music = "Jack/sounds/level_1_music.mp3"
-game_over_music = "Jack/sounds/game_over.mp3"
+game_over_music = "Jack/sounds/game_over_final.mp3"
 
 
 # Load images
@@ -328,6 +329,7 @@ class Player(AnimatedEntity):
             arrow = Arrow(arrow_x, arrow_y, direction)
             self.arrow_group.add(arrow)
             self.arrow_timer = self.arrow_cooldown
+            bow_sound.play()
 
     def collide(self, tiles):
         # 1. Horizontal movement first
