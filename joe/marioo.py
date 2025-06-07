@@ -99,6 +99,9 @@ class Enemy(Entity):
         self.left_bound = left_bound
         self.right_bound = right_bound
         self.vel.x = 2
+        self.image = pygame.image.load('joe/images/zombie1.png').convert_alpha()
+        self.image = pygame.transform.scale(self.image, (TILE, TILE))
+        self.rect = self.image.get_rect(topleft=(x, y))
 
     def update(self):
         super().update()
