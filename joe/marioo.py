@@ -6,14 +6,16 @@ pygame.mixer.music.load("MWT/sounds/807184__logicmoon__mirrors.wav")
 pygame.mixer.music.play(-1)
 
 jump_sound = pygame.mixer.Sound("MWT/sounds/686523__xupr_e3__mixkit-arcade-game-jump-coin-216.wav")
-
+ 
 WIDTH, HEIGHT = 800, 448
 FPS = 60
 GRAVITY = 0.5
 PLAYER_SPEED = 4
 JUMP_VELOCITY = -10
 TILE = 32
-LEVEL_WIDTH = 1600
+LEVEL_WIDTH = 5000
+
+
 
 SKY      = (135, 206, 235)
 GROUND   = (160, 82, 45)
