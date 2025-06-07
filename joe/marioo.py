@@ -29,7 +29,7 @@ screen = pygame.display.set_mode((WIDTH, HEIGHT))
 pygame.display.set_caption("Simple Platformer Demo")
 clock = pygame.time.Clock()
 
-background_img_raw = pygame.image.load("joe/sky_background.jpeg").convert()
+background_img_raw = pygame.image.load("joe/images/sky_background.jpeg").convert()
 background_img = pygame.transform.scale(background_img_raw, (
     int(background_img_raw.get_width() * (HEIGHT / background_img_raw.get_height())), HEIGHT))
 background_width = background_img.get_width()
@@ -52,6 +52,9 @@ class Player(Entity):
     def __init__(self, x, y):
         super().__init__(x, y, TILE, int(TILE * 1.5), PLAYER_C)
         self.on_ground = False
+        self.image = pygame.image.load('joe/images/character.png').convert_alpha()
+        self.image = pygame.transform.scale(self.image, (TILE, int(TILE * 3)))
+        self.rect = self.image.get_rect(topleft=(x, y))
 
     def handle_input(self, keys):
         self.vel.x = 0
@@ -139,7 +142,7 @@ def create_level():
 
     return tiles, enemies, flag
 
-tile_image = pygame.image.load('joe/grass.jpg').convert_alpha()
+tile_image = pygame.image.load('joe/images/grass.jpg').convert_alpha()
 tile_image = pygame.transform.scale(tile_image, (32, 32))
 
 def draw_tiles(surf, tiles, camera_x, tile_image=tile_image):
@@ -150,7 +153,7 @@ def draw_tiles(surf, tiles, camera_x, tile_image=tile_image):
 
 def main():
     tiles, enemies, flag = create_level()
-    player = Player(64, HEIGHT - 3*TILE)
+    player = Player(64, HEIGHT - 5*TILE)
     sprites = pygame.sprite.Group(player, *enemies)
 
     running = True
