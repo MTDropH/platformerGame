@@ -55,10 +55,18 @@ def draw_grid():
 
 def draw_toolbar():
     modes = ["tile", "stone_dirt", "grass", "stone", "enemy", "powerup", "bow_powerup", "flag", "delete"]
+    spacing = WIDTH // len(modes)  # Dynamically calculate spacing based on screen width
+
     for i, m in enumerate(modes):
         color = (255, 255, 0) if m == mode else (255, 255, 255)
         label = font.render(m, True, color)
-        screen.blit(label, (10 + i * 100, 10))
+        label_rect = label.get_rect()
+        label_x = spacing * i + (spacing - label_rect.width) // 2
+        screen.blit(label, (label_x, 10))
+
+    # Show current level
+    level_label = font.render(f"Editing Level {current_level}", True, (255, 255, 255))
+    screen.blit(level_label, (10, HEIGHT - 30))
 
     # Show current level
     level_label = font.render(f"Editing Level {current_level}", True, (255, 255, 255))

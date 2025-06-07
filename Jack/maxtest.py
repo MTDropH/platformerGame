@@ -102,7 +102,7 @@ bow_sound = pygame.mixer.Sound("Jack/sounds/bow_shoot.mp3")
 # --- Load Music Tracks ---
 title_music = "Jack/sounds/title_screen.mp3"
 level_music = "Jack/sounds/level_1_music.mp3"
-game_over_music = "Jack/sounds/game_over_final.mp3"
+game_over_music = "Jack/sounds/game_over_voice.mp3"
 
 
 # Load images
@@ -526,7 +526,8 @@ def show_game_over_screen():
     return False
 
 def show_level_complete_screen():
-    pygame.mixer.music.stop()
+    pygame.mixer.music.load("Jack/sounds/level_complete.mp3")
+    pygame.mixer.music.play()
 
     # Load and scale level complete image
     level_complete_img = pygame.image.load("Jack/images/level_1_complete1.png").convert_alpha()
