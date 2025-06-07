@@ -3051,6 +3051,34 @@
       "width": 32,
       "height": 32,
       "type": "stone_dirt"
+    },
+    {
+      "x": 3360,
+      "y": 256,
+      "width": 32,
+      "height": 32,
+      "type": "dirt"
+    },
+    {
+      "x": 3328,
+      "y": 256,
+      "width": 32,
+      "height": 32,
+      "type": "dirt"
+    },
+    {
+      "x": 3360,
+      "y": 288,
+      "width": 32,
+      "height": 32,
+      "type": "stone_dirt"
+    },
+    {
+      "x": 3328,
+      "y": 288,
+      "width": 32,
+      "height": 32,
+      "type": "stone_dirt"
     }
   ],
   "decorations": [
@@ -3229,8 +3257,8 @@
     }
   ],
   "flag": {
-    "x": 3328,
-    "y": 224,
+    "x": 3360,
+    "y": 192,
     "width": 32,
     "height": 64
   }
