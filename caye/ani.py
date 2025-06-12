@@ -61,11 +61,11 @@ class Player(Entity):
 
     def handle_input(self, keys):
         self.vel.x = 0
-        if keys[pygame.K_LEFT]:
+        if keys[pygame.K_a]:
             self.vel.x = -PLAYER_SPEED
-        if keys[pygame.K_RIGHT]:
+        if keys[pygame.K_d]:
             self.vel.x = PLAYER_SPEED
-        if (keys[pygame.K_SPACE] or keys[pygame.K_UP]) and self.on_ground:
+        if (keys[pygame.K_SPACE] or keys[pygame.K_w]) and self.on_ground:
             self.vel.y = JUMP_VELOCITY
             jump_sound.play()
 
