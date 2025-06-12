@@ -1,7 +1,7 @@
 # This week's tasks:
-# - Add more barrels that fall from the top of the screen
-
-
+# - Add a background image
+# - Add sound effects
+# - Make the screen taller, and make the platforms further apart
 import sys
 import random
 import pygame
