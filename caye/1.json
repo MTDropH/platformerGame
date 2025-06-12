@@ -1,0 +1,41 @@
+{
+  "tiles": [
+    {
+      "x": 224,
+      "y": 320,
+      "width": 32,
+      "height": 32,
+      "type": "dirt"
+    },
+    {
+      "x": 256,
+      "y": 320,
+      "width": 32,
+      "height": 32,
+      "type": "dirt"
+    },
+    {
+      "x": 288,
+      "y": 320,
+      "width": 32,
+      "height": 32,
+      "type": "dirt"
+    },
+    {
+      "x": 320,
+      "y": 320,
+      "width": 32,
+      "height": 32,
+      "type": "dirt"
+    }
+  ],
+  "decorations": [],
+  "enemies": [],
+  "powerups": [],
+  "flag": {
+    "x": 0,
+    "y": 0,
+    "width": 32,
+    "height": 64
+  }
+}
