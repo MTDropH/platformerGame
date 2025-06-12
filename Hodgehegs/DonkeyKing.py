@@ -124,12 +124,10 @@ class Player(AnimatedEntity):
 platforms = [
     pygame.Rect(   0, HEIGHT -  20, WIDTH, 20),
     
-    pygame.Rect( 100, 700, 600, 20),
-    pygame.Rect(   0, 600, 600, 20),
-    pygame.Rect( 100, 500, 600, 20),
-    pygame.Rect(   0, 400, 600, 20),
-    pygame.Rect( 100, 300, 600, 20),
-    pygame.Rect(   0, 200, 600, 20),
+    pygame.Rect( 100, 650, 600, 20),
+    pygame.Rect(   0, 550, 600, 20),
+    pygame.Rect(   100, 400, 600, 20),
+    pygame.Rect(   0, 250, 600, 20),
     pygame.Rect( 100, 100, 600, 20),
     pygame.Rect(   0, -200, 600, 20),
     ]
