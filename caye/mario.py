@@ -16,7 +16,7 @@ GRAVITY = 0.5
 PLAYER_SPEED = 4
 JUMP_VELOCITY = -10
 TILE = 32
-LEVEL_WIDTH = 1600
+LEVEL_WIDTH = 4800
 
 SKY      = (0, 0, 201)
 GROUND   = (0, 194, 0)
@@ -109,24 +109,39 @@ class Enemy(Entity):
             self.vel.x *= -1
 
 
-def create_level():
-    tiles = []
-    for x in range(0, LEVEL_WIDTH, TILE):
-        tiles.append(pygame.Rect(x, HEIGHT - TILE, TILE, TILE))
+import json
 
-    tiles.append(pygame.Rect(200, HEIGHT - 5*TILE, TILE*3, TILE))
-    tiles.append(pygame.Rect(500, HEIGHT - 7*TILE, TILE*2, TILE))
-    tiles.append(pygame.Rect(1000, HEIGHT - 4*TILE, TILE*4, TILE))
-    tiles.append(pygame.Rect(1350, HEIGHT - 6*TILE, TILE*2, TILE))
+def create_level():
+    with open('caye/1.json', 'r') as f:
+        data = json.load(f)
+
+    tiles = []
+    for tile_data in data["tiles"]:
+        rect = pygame.Rect(
+            tile_data["x"],
+            tile_data["y"],
+            tile_data["width"],
+            tile_data["height"]
+        )
+        tiles.append(rect)
 
     enemies = pygame.sprite.Group()
-    enemies.add(Enemy(300, HEIGHT - 2*TILE, 300, 500))
-    enemies.add(Enemy(550, HEIGHT - 8*TILE - TILE, 500, 650, (100,100,100)))
-    enemies.add(Enemy(890, HEIGHT - 9*TILE, 300, 1200))
-    enemies.add(Enemy(1020, HEIGHT - 5*TILE, 1000, 1200))
-    enemies.add(Enemy(1020, HEIGHT - 5*TILE, 300, 1500))
+    for enemy_data in data["enemies"]:
+        enemy = Enemy(
+            enemy_data["x"],
+            enemy_data["y"],
+            enemy_data["left_bound"],
+            enemy_data["right_bound"]
+        )
+        enemies.add(enemy)
 
-    flag = pygame.Rect(LEVEL_WIDTH - 2*TILE, HEIGHT - 3*TILE, TILE, 2*TILE)
+    flag_data = data["flag"]
+    flag = pygame.Rect(
+        flag_data["x"],
+        flag_data["y"],
+        flag_data["width"],
+        flag_data["height"]
+    )
 
     return tiles, enemies, flag
 
