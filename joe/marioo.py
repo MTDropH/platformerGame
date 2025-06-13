@@ -29,6 +29,11 @@ screen = pygame.display.set_mode((WIDTH, HEIGHT))
 pygame.display.set_caption("Simple Platformer Demo")
 clock = pygame.time.Clock()
 
+background_img_raw = pygame.image.load("joe/images/sky_background.jpeg").convert()
+background_img = pygame.transform.scale(background_img_raw, (
+    int(background_img_raw.get_width() * (HEIGHT / background_img_raw.get_height())), HEIGHT))
+background_width = background_img.get_width()
+background_scroll_speed = 0.5
 
 class Entity(pygame.sprite.Sprite):
     def __init__(self, x, y, w, h, colour):
@@ -47,6 +52,9 @@ class Player(Entity):
     def __init__(self, x, y):
         super().__init__(x, y, TILE, int(TILE * 1.5), PLAYER_C)
         self.on_ground = False
+        self.image = pygame.image.load('joe/images/character.png').convert_alpha()
+        self.image = pygame.transform.scale(self.image, (TILE, int(TILE * 3)))
+        self.rect = self.image.get_rect(topleft=(x, y))
 
     def handle_input(self, keys):
         self.vel.x = 0
@@ -91,6 +99,9 @@ class Enemy(Entity):
         self.left_bound = left_bound
         self.right_bound = right_bound
         self.vel.x = 2
+        self.image = pygame.image.load('joe/images/zombie1.png').convert_alpha()
+        self.image = pygame.transform.scale(self.image, (TILE, TILE))
+        self.rect = self.image.get_rect(topleft=(x, y))
 
     def update(self):
         super().update()
@@ -134,18 +145,18 @@ def create_level():
 
     return tiles, enemies, flag
 
+tile_image = pygame.image.load('joe/images/grass.jpg').convert_alpha()
+tile_image = pygame.transform.scale(tile_image, (32, 32))
 
-def draw_tiles(surf, tiles, camera_x):
+def draw_tiles(surf, tiles, camera_x, tile_image=tile_image):
     for rect in tiles:
         shifted_rect = rect.move(-camera_x, 0)
-        pygame.draw.rect(surf, PLAT_C, shifted_rect)
-
-
+        surf.blit(tile_image, shifted_rect)
 
 
 def main():
     tiles, enemies, flag = create_level()
-    player = Player(64, HEIGHT - 3*TILE)
+    player = Player(64, HEIGHT - 5*TILE)
     sprites = pygame.sprite.Group(player, *enemies)
 
     running = True
@@ -181,7 +192,9 @@ def main():
 
         camera_x = max(0, min(player.rect.centerx - WIDTH // 2, LEVEL_WIDTH - WIDTH))
 
-        screen.fill(SKY)
+        for x in range(0, WIDTH * 3, background_width):
+            screen.blit(background_img, (x - camera_x * background_scroll_speed, 0))
+            
         draw_tiles(screen, tiles, camera_x)
         for sprite in sprites:
             screen.blit(sprite.image, sprite.rect.move(-camera_x, 0))

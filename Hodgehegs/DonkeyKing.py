@@ -1,14 +1,14 @@
 # This week's tasks:
-# - Add more barrels that fall from the top of the screen
-
-
+# - Add a background image
+# - Add sound effects
+# - Make the screen taller, and make the platforms further apart
 import sys
 import random
 import pygame
 
 pygame.init()
 
-WIDTH, HEIGHT = 800, 600
+WIDTH, HEIGHT = 800, 800
 FPS            = 60
 
 SKY            = (255, 255, 255)
@@ -16,9 +16,9 @@ BLUE           = (0, 0, 255)
 BROWN          = (139, 69, 19)
 GREEN          = (0, 255, 0)
 
-GRAVITY        = 1
+GRAVITY        = 0.6
 PLAYER_SPEED   = 5
-JUMP_VELOCITY  = -10
+JUMP_VELOCITY  = -9
 TILE           = 32                        
 
 clock = pygame.time.Clock()
@@ -28,7 +28,7 @@ pygame.display.set_caption("Donkey Kong")
 def load(path, w, h):
     return pygame.transform.scale(pygame.image.load(path).convert_alpha(), (w, h))
 
-# ▸ player frames (replace paths with your own art)
+game_image = load("Hodgehegs/bigboy.jpg", WIDTH, HEIGHT)
 player_run_frames  = [
     load("Hodgehegs/Mario1.png",  TILE, TILE * 2),
     load("Hodgehegs/Mariorun1.png",  TILE, TILE * 2),
@@ -124,11 +124,12 @@ class Player(AnimatedEntity):
 platforms = [
     pygame.Rect(   0, HEIGHT -  20, WIDTH, 20),
     
-    pygame.Rect( 100, 500, 600, 20),
-    pygame.Rect(   0, 400, 600, 20),
-    pygame.Rect( 100, 300, 600, 20),
-    pygame.Rect(   0, 200, 600, 20),
+    pygame.Rect( 100, 650, 600, 20),
+    pygame.Rect(   0, 550, 600, 20),
+    pygame.Rect(   100, 400, 600, 20),
+    pygame.Rect(   0, 250, 600, 20),
     pygame.Rect( 100, 100, 600, 20),
+    pygame.Rect(   0, -200, 600, 20),
     ]
 goal = pygame.Rect(WIDTH - 60, 150, 50, 50)
 
@@ -189,7 +190,7 @@ while running:
         running = False
 
     # ── rendering ────────────────
-    win.fill(SKY)
+    win.blit(game_image, (0, 0))  # draw background
 
     # draw geometry
     for p in platforms:
