@@ -28,7 +28,7 @@ clock = pygame.time.Clock()
 font = pygame.font.SysFont(None, 36)
 
 # --- load images ---
-player_img_orig = pygame.image.load("Jack/hopper_main1.png").convert_alpha()
+player_img_orig = pygame.image.load("Jack/images/dirt.png").convert_alpha()
 coin_img_orig = pygame.image.load("MWT/coin.png").convert_alpha()
 player_img = pygame.transform.scale(player_img_orig, (150, 150))
 coin_img = pygame.transform.scale(coin_img_orig, (50, 50))
