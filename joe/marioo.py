@@ -2,10 +2,10 @@ import sys
 import pygame
 
 pygame.mixer.init()
-pygame.mixer.music.load("MWT/sounds/807184__logicmoon__mirrors.wav")
+pygame.mixer.music.load("Jack/sounds/8bit-sample-69080.mp3")
 pygame.mixer.music.play(-1)
 
-jump_sound = pygame.mixer.Sound("MWT/sounds/686523__xupr_e3__mixkit-arcade-game-jump-coin-216.wav")
+jump_sound = pygame.mixer.Sound("Jack/sounds/sword_whoosh.mp3")
  
 WIDTH, HEIGHT = 800, 448
 FPS = 60
