@@ -122,22 +122,50 @@ class Player(Entity):
         self.rect = self.image.get_rect(topleft=self.rect.topleft)
 
         super().update()
+        
+enemy_images_right = [
+    pygame.transform.scale(pygame.image.load('joe/images/badGuy1.png').convert_alpha(), (TILE, TILE*1.5)),
+    pygame.transform.scale(pygame.image.load('joe/images/badGuy2.png').convert_alpha(), (TILE, TILE*1.5))
+]
+
+enemy_images_left = [
+    pygame.transform.flip(img, True, False) for img in enemy_images_right
+]
 
 class Enemy(Entity):
     def __init__(self, x, y, left_bound, right_bound):
         super().__init__(x, y, TILE, TILE, ENEMY_C)
         self.left_bound = left_bound
         self.right_bound = right_bound
-        self.vel.x = 2
-        self.image = pygame.image.load('joe/images/zombie1.png').convert_alpha()
-        self.image = pygame.transform.scale(self.image, (TILE, TILE))
+        self.vel.x = 2  # Start moving right
+
+        self.images_right = enemy_images_right
+        self.images_left = enemy_images_left
+        self.frame_index = 0
+        self.animation_timer = 0
+        self.animation_speed = 0.15
+
+        self.image = self.images_right[0]
         self.rect = self.image.get_rect(topleft=(x, y))
 
     def update(self):
         super().update()
+
+        # Reverse direction on bounds
         if self.rect.left <= self.left_bound or self.rect.right >= self.right_bound:
             self.vel.x *= -1
 
+        # Choose image set based on direction
+        images = self.images_right if self.vel.x > 0 else self.images_left
+
+        # Animate
+        self.animation_timer += self.animation_speed
+        if self.animation_timer >= 1:
+            self.animation_timer = 0
+            self.frame_index = (self.frame_index + 1) % len(images)
+
+        self.image = images[self.frame_index]
+        self.rect = self.image.get_rect(topleft=self.rect.topleft)
 
 import json
 
