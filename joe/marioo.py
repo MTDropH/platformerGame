@@ -27,7 +27,7 @@ screen = pygame.display.set_mode((WIDTH, HEIGHT))
 pygame.display.set_caption("Running Man")
 clock = pygame.time.Clock()
 
-background_img_raw = pygame.image.load("joe/images/streetbackground.jpg").convert()
+background_img_raw = pygame.image.load("joe/images/streetbackround.jpg").convert()
 background_img = pygame.transform.scale(background_img_raw, (
     int(background_img_raw.get_width() * (HEIGHT / background_img_raw.get_height())), HEIGHT))
 background_width = background_img.get_width()
@@ -175,7 +175,7 @@ def create_level():
 
     return tiles, enemies, flag
 
-tile_image = pygame.image.load('joe/images/grass.jpg').convert_alpha()
+tile_image = pygame.image.load('joe/images/streetjumpblocks.jpg').convert_alpha()
 tile_image = pygame.transform.scale(tile_image, (32, 32))
 
 def draw_tiles(surf, tiles, camera_x, tile_image=tile_image):
@@ -183,16 +183,16 @@ def draw_tiles(surf, tiles, camera_x, tile_image=tile_image):
         shifted_rect = rect.move(-camera_x, 0)
         surf.blit(tile_image, shifted_rect)
 
-if player.rect.top > HEIGHT + 100:  # 100 pixels below screen
-    player.lives -= 1
-    if player.lives <= 0:
-        restart = show_game_over_screen()
-        if restart:
-            main(level_number=1)  # Restart from level 1
-        running = False
-    else:
-        player.rect.topleft = (64, HEIGHT - 3 * TILE)
-        player.vel = pygame.Vector2(0, 0)
+# if player.rect.top > HEIGHT + 100:  # 100 pixels below screen
+#     player.lives -= 1
+#     if player.lives <= 0:
+#         restart = show_game_over_screen()
+#         if restart:
+#             main(level_number=1)  # Restart from level 1
+#         running = False
+#     else:
+#         player.rect.topleft = (64, HEIGHT - 3 * TILE)
+#         player.vel = pygame.Vector2(0, 0)
 
 
 def main():
