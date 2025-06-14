@@ -13,7 +13,7 @@ GRAVITY = 0.5
 PLAYER_SPEED = 4
 JUMP_VELOCITY = -10
 TILE = 32
-LEVEL_WIDTH = 5000
+LEVEL_WIDTH = 4096
 
 SKY      = (135, 206, 235)
 GROUND   = (160, 82, 45)
@@ -229,6 +229,7 @@ def main():
         # End condition
         if player.rect.colliderect(flag):
             print("Level complete!")
+            
             running = False
 
         camera_x = max(0, min(player.rect.centerx - WIDTH // 2, LEVEL_WIDTH - WIDTH))
