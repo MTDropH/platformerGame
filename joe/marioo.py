@@ -15,8 +15,6 @@ JUMP_VELOCITY = -10
 TILE = 32
 LEVEL_WIDTH = 5000
 
-
-
 SKY      = (135, 206, 235)
 GROUND   = (160, 82, 45)
 PLAYER_C = (255, 0, 0)
@@ -35,6 +33,16 @@ background_img = pygame.transform.scale(background_img_raw, (
 background_width = background_img.get_width()
 background_scroll_speed = 0.5
 
+idle_images = [
+    pygame.transform.scale(pygame.image.load('joe/images/idle1RM.png').convert_alpha(), (TILE, int(TILE * 3))),
+    pygame.transform.scale(pygame.image.load('joe/images/idle2RM.png').convert_alpha(), (TILE, int(TILE * 3)))
+]
+
+run_images = [
+    pygame.transform.scale(pygame.image.load('joe/images/running1RM.png').convert_alpha(), (TILE, int(TILE * 3))),
+    pygame.transform.scale(pygame.image.load('joe/images/running2RM.png').convert_alpha(), (TILE, int(TILE * 3)))
+]
+
 class Entity(pygame.sprite.Sprite):
     def __init__(self, x, y, w, h, colour):
         super().__init__()
@@ -47,14 +55,19 @@ class Entity(pygame.sprite.Sprite):
         self.rect.x += self.vel.x
         self.rect.y += self.vel.y
 
-
 class Player(Entity):
     def __init__(self, x, y):
-        super().__init__(x, y, TILE, int(TILE * 1.5), PLAYER_C)
-        self.on_ground = False
-        self.image = pygame.image.load('joe/images/character.png').convert_alpha()
-        self.image = pygame.transform.scale(self.image, (TILE, int(TILE * 3)))
+        super().__init__(x, y, int(TILE*1.4), int(TILE * 1.2), PLAYER_C)
+        self.idle_images = idle_images
+        self.run_images = run_images
+        self.current_images = self.idle_images
+        self.frame_index = 0
+        self.animation_timer = 0
+        self.animation_speed = 0.1  # Controls how fast the animation flips
+
+        self.image = self.idle_images[0]
         self.rect = self.image.get_rect(topleft=(x, y))
+        self.on_ground = False
 
     def handle_input(self, keys):
         self.vel.x = 0
@@ -64,7 +77,7 @@ class Player(Entity):
             self.vel.x = PLAYER_SPEED
         if (keys[pygame.K_SPACE] or keys[pygame.K_UP]) and self.on_ground:
             self.vel.y = JUMP_VELOCITY
-            jump_sound.play
+            jump_sound.play()
 
     def apply_gravity(self):
         self.vel.y += GRAVITY
@@ -92,6 +105,23 @@ class Player(Entity):
                 self.rect.top = tile.bottom
                 self.vel.y = 0
 
+    def update(self):
+        # Choose which animation to use
+        if self.vel.x != 0:
+            self.current_images = self.run_images
+        else:
+            self.current_images = self.idle_images
+
+        # Update animation frame
+        self.animation_timer += self.animation_speed
+        if self.animation_timer >= 1:
+            self.animation_timer = 0
+            self.frame_index = (self.frame_index + 1) % len(self.current_images)
+
+        self.image = self.current_images[self.frame_index]
+        self.rect = self.image.get_rect(topleft=self.rect.topleft)
+
+        super().update()
 
 class Enemy(Entity):
     def __init__(self, x, y, left_bound, right_bound):
