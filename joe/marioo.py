@@ -24,10 +24,10 @@ FLAG_C   = (255, 215, 0)
 
 pygame.init()
 screen = pygame.display.set_mode((WIDTH, HEIGHT))
-pygame.display.set_caption("Simple Platformer Demo")
+pygame.display.set_caption("Running Man")
 clock = pygame.time.Clock()
 
-background_img_raw = pygame.image.load("joe/images/sky_background.jpeg").convert()
+background_img_raw = pygame.image.load("joe/images/streetbackground.jpg").convert()
 background_img = pygame.transform.scale(background_img_raw, (
     int(background_img_raw.get_width() * (HEIGHT / background_img_raw.get_height())), HEIGHT))
 background_width = background_img.get_width()
