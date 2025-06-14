@@ -211,18 +211,6 @@ def draw_tiles(surf, tiles, camera_x, tile_image=tile_image):
         shifted_rect = rect.move(-camera_x, 0)
         surf.blit(tile_image, shifted_rect)
 
-# if player.rect.top > HEIGHT + 100:  # 100 pixels below screen
-#     player.lives -= 1
-#     if player.lives <= 0:
-#         restart = show_game_over_screen()
-#         if restart:
-#             main(level_number=1)  # Restart from level 1
-#         running = False
-#     else:
-#         player.rect.topleft = (64, HEIGHT - 3 * TILE)
-#         player.vel = pygame.Vector2(0, 0)
-
-
 def main():
     tiles, enemies, flag = create_level()
     player = Player(64, HEIGHT - 5*TILE)
@@ -250,9 +238,12 @@ def main():
                     sprites.remove(enemy)
                     player.vel.y = JUMP_VELOCITY / 1.5
                 else:
-                    print("Ouch! Respawn...")
                     player.rect.topleft = (64, HEIGHT - 3*TILE)
                     player.vel = pygame.Vector2(0, 0)
+                    
+        if player.rect.topleft[1] > HEIGHT:
+            player.rect.topleft = (64, HEIGHT - 3*TILE)
+            player.vel = pygame.Vector2(0, 0)
 
         # End condition
         if player.rect.colliderect(flag):
