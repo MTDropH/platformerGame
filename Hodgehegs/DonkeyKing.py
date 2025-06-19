@@ -21,7 +21,11 @@ GREEN          = (0, 255, 0)
 GRAVITY        = 0.6
 PLAYER_SPEED   = 5
 JUMP_VELOCITY  = -9
-TILE           = 32                        
+TILE           = 32   
+
+pygame.mixer.init()
+pygame.mixer.music.load("Hodgehegs/doingdamage.mp3")
+pygame.mixer.music.play(-1)
 
 clock = pygame.time.Clock()
 win   = pygame.display.set_mode((WIDTH, HEIGHT))
