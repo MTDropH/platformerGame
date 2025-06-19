@@ -69,7 +69,7 @@ def load_level_sprites(level_number):
             pygame.image.load("Jack/images/deco_stone.png").convert_alpha(), (TILE, TILE))
 
         powerup_img = pygame.transform.scale(
-            pygame.image.load("Jack/images/armour polish.png").convert_alpha(), (TILE, TILE))
+            pygame.image.load("Jack/images/armour_power_up.png").convert_alpha(), (TILE, TILE))
         
         global bow_powerup_img
         bow_powerup_img = pygame.transform.scale(
@@ -688,8 +688,6 @@ def main(level_number=1):
                         player.lives -= 1
                         player.invincible = True
                         player.invincibility_timer = 1.0
-                        direction = 1 if player.rect.centerx < enemy.rect.centerx else -1
-                        player.hurt_knockback = pygame.Vector2(-direction * 6, -6)
 
                         if player.lives <= 0:
                             show_game_over_screen()

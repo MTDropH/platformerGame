@@ -6,7 +6,7 @@ pygame.init()
 
 WIDTH, HEIGHT = 800, 448
 TILE = 32
-LEVEL_WIDTH = 5000
+LEVEL_WIDTH = 4096
 screen = pygame.display.set_mode((WIDTH, HEIGHT))
 pygame.display.set_caption("Level Editor")
 clock = pygame.time.Clock()
