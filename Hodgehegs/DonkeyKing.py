@@ -5,7 +5,9 @@
 import sys
 import random
 import pygame
-
+pygame.mixer.init()
+pygame.mixer.music.load("Hodgehegs/sad-violin_FtcVu13.mp3")
+pygame.mixer.music.play(-1)
 pygame.init()
 
 WIDTH, HEIGHT = 800, 800
@@ -19,7 +21,11 @@ GREEN          = (0, 255, 0)
 GRAVITY        = 0.6
 PLAYER_SPEED   = 5
 JUMP_VELOCITY  = -9
-TILE           = 32                        
+TILE           = 32   
+
+pygame.mixer.init()
+pygame.mixer.music.load("Hodgehegs/doingdamage.mp3")
+pygame.mixer.music.play(-1)
 
 clock = pygame.time.Clock()
 win   = pygame.display.set_mode((WIDTH, HEIGHT))
@@ -37,12 +43,12 @@ player_idle_frames = [
     load("Hodgehegs/Mario1.png",       TILE, TILE * 2),]
 
 donkey_kong_run_frames = [
-    load("Hodgehegs/Donkey_kong_barrel.jpeg",TILE*2, TILE * 3),
-    load("Hodgehegs/Donkey_kong.jpeg",TILE*2, TILE * 3)
+    load("Hodgehegs/Donkey_kong_barrel.png",TILE*2, TILE * 3),
+    load("Hodgehegs/Donkey_kong.png",TILE*2, TILE * 3)
     ]
 
 donkey_kong_idle_frames = [
-    load("Hodgehegs/Donkey_kong.jpeg",TILE, TILE * 3),]
+    load("Hodgehegs/Donkey_kong.png",TILE, TILE * 3),]
 
 
 class AnimatedEntity(pygame.sprite.Sprite):

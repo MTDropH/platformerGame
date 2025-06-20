@@ -28,7 +28,7 @@ pygame.init()
 pygame.mixer.init()
 
 screen = pygame.display.set_mode((WIDTH, HEIGHT))
-pygame.display.set_caption("Simple Platformer Demo")
+pygame.display.set_caption("Chaye's Game")
 clock = pygame.time.Clock()
 
 background_img_raw = pygame.image.load("Jack/images/new_background.png").convert()
@@ -55,9 +55,11 @@ class Entity(pygame.sprite.Sprite):
 
 class Player(Entity):
     def __init__(self, x, y):
-        super().__init__(x, y, TILE, int(TILE * 1.5), PLAYER_C)
+        super().__init__(x, y, TILE, int(TILE), PLAYER_C)
         self.on_ground = False
         self.LIVES = 3
+        self.image = pygame.image.load("Jack/images/hopper_main1.png").convert_alpha()
+        self.image = pygame.transform.scale(self.image, (self.rect.width, self.rect.height))
 
     def handle_input(self, keys):
         self.vel.x = 0
@@ -95,6 +97,8 @@ class Player(Entity):
                 self.rect.top = tile.bottom
                 self.vel.y = 0
 
+    def draw(self, surface):
+        surface.blit(self.image, self.rect)
 
 class Enemy(Entity):
     def __init__(self, x, y, left_bound, right_bound, colour=ENEMY_C):
@@ -196,6 +200,8 @@ def main():
         draw_tiles(screen, tiles, camera_x)
         for sprite in sprites:
             screen.blit(sprite.image, sprite.rect.move(-camera_x, 0))
+            
+        # player.draw(screen)
 
         if (onetime == 0) and (len(enemies) == 0):
             new_enemy = Enemy(1020, HEIGHT - 5*TILE, 300, 1500)
