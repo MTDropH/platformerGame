@@ -21,7 +21,7 @@ JUMP_VELOCITY  = -9
 TILE           = 32   
 pygame.init()
 screen = pygame.display.set_mode((WIDTH, HEIGHT))
-pygame.display.set_caption("Max the Knight")
+pygame.display.set_caption("Donkey King")
 clock = pygame.time.Clock()
 font = pygame.font.SysFont("Century Gothic", 24)
 
