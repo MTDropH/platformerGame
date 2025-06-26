@@ -1,12 +1,9 @@
-# This week's tasks:
-# - Add a background image
-# - Add sound effects
-# - Make the screen taller, and make the platforms further apart
+
 import sys
 import random
 import pygame
 pygame.mixer.init()
-pygame.mixer.music.load("Hodgehegs/sad-violin_FtcVu13.mp3")
+pygame.mixer.music.load("Hodgehegs\Sounds\sad-violin_FtcVu13.mp3")
 pygame.mixer.music.play(-1)
 pygame.init()
 
@@ -22,9 +19,14 @@ GRAVITY        = 0.6
 PLAYER_SPEED   = 5
 JUMP_VELOCITY  = -9
 TILE           = 32   
+pygame.init()
+screen = pygame.display.set_mode((WIDTH, HEIGHT))
+pygame.display.set_caption("Max the Knight")
+clock = pygame.time.Clock()
+font = pygame.font.SysFont("Century Gothic", 24)
 
 pygame.mixer.init()
-pygame.mixer.music.load("Hodgehegs/doingdamage.mp3")
+pygame.mixer.music.load("Hodgehegs/Sounds/doingdamage.mp3")
 pygame.mixer.music.play(-1)
 
 clock = pygame.time.Clock()
@@ -34,21 +36,21 @@ pygame.display.set_caption("Donkey Kong")
 def load(path, w, h):
     return pygame.transform.scale(pygame.image.load(path).convert_alpha(), (w, h))
 
-game_image = load("Hodgehegs/bigboy.jpg", WIDTH, HEIGHT)
+game_image = load("Hodgehegs/Images/bigboy.jpg", WIDTH, HEIGHT)
 player_run_frames  = [
-    load("Hodgehegs/Mario1.png",  TILE, TILE * 2),
-    load("Hodgehegs/Mariorun1.png",  TILE, TILE * 2),
+    load("Hodgehegs/Images/Mario1.png",  TILE, TILE * 2),
+    load("Hodgehegs/Images/Mariorun1.png",  TILE, TILE * 2),
 ]
 player_idle_frames = [
-    load("Hodgehegs/Mario1.png",       TILE, TILE * 2),]
+    load("Hodgehegs/Images/Mario1.png",       TILE, TILE * 2),]
 
 donkey_kong_run_frames = [
-    load("Hodgehegs/Donkey_kong_barrel.png",TILE*2, TILE * 3),
-    load("Hodgehegs/Donkey_kong.png",TILE*2, TILE * 3)
+    load("Hodgehegs/Images/Donkey_kong_barrel.png",TILE*2, TILE * 3),
+    load("Hodgehegs/Images/Donkey_kong.png",TILE*2, TILE * 3)
     ]
 
 donkey_kong_idle_frames = [
-    load("Hodgehegs/Donkey_kong.png",TILE, TILE * 3),]
+    load("Hodgehegs/Images/Donkey_kong.png",TILE, TILE * 3),]
 
 
 class AnimatedEntity(pygame.sprite.Sprite):
