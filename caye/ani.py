@@ -58,7 +58,7 @@ class Player(Entity):
         super().__init__(x, y, TILE, int(TILE), PLAYER_C)
         self.on_ground = False
         self.LIVES = 3
-        self.image = pygame.image.load("Jack/images/hopper_main1.png").convert_alpha()
+        self.image = pygame.image.load("Jack/images/goober1.png").convert_alpha()
         self.image = pygame.transform.scale(self.image, (self.rect.width, self.rect.height))
 
     def handle_input(self, keys):
