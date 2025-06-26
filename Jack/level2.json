@@ -3249,6 +3249,32 @@
       "right_bound": 3104
     }
   ],
+  "slimes": [
+    {
+      "x": 1856,
+      "y": 288,
+      "left_bound": 1792,
+      "right_bound": 1920
+    },
+    {
+      "x": 2112,
+      "y": 352,
+      "left_bound": 2048,
+      "right_bound": 2176
+    },
+    {
+      "x": 2592,
+      "y": 320,
+      "left_bound": 2528,
+      "right_bound": 2656
+    },
+    {
+      "x": 2880,
+      "y": 288,
+      "left_bound": 2816,
+      "right_bound": 2944
+    }
+  ],
   "powerups": [
     {
       "x": 576,
