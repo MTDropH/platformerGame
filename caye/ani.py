@@ -106,11 +106,16 @@ class Enemy(Entity):
         self.left_bound = left_bound
         self.right_bound = right_bound
         self.vel.x = 2
+        self.image = pygame.image.load("Jack/images/hopper_main1.png").convert_alpha()
+        self.image = pygame.transform.scale(self.image, (self.rect.width, self.rect.height))
 
     def update(self):
         super().update()
         if self.rect.left <= self.left_bound or self.rect.right >= self.right_bound:
             self.vel.x *= -1
+            
+    def draw(self, surface):
+        surface.blit(self.image, self.rect)
 
 
 import json
@@ -150,9 +155,13 @@ def create_level():
     return tiles, enemies, flag
 
 def draw_tiles(surf, tiles, camera_x):
+    original_image = pygame.image.load("Jack/images/level_2_stone_dirt.png").convert_alpha()
+    image = pygame.transform.scale(original_image, (TILE, TILE))  # TILE must be predefined
+
     for rect in tiles:
         shifted_rect = rect.move(-camera_x, 0)
-        pygame.draw.rect(surf, PLAT_C, shifted_rect)
+        surf.blit(image, shifted_rect.topleft)
+
 
 onetime = 0
 def main():
