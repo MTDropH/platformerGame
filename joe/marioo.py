@@ -53,20 +53,20 @@ class Entity(pygame.sprite.Sprite):
         self.rect.x += self.vel.x
         self.rect.y += self.vel.y
 
-WATER_SIZE = TILE // 1        # 16 px if TILE is 32; tweak as you like (e.g. TILE//3)
+WATER_DROP_SIZE   = TILE // 3     # small droplet
 
-water_images = [
-    pygame.transform.scale(
-        pygame.image.load('joe/images/water1.jpg').convert_alpha(),
-        (WATER_SIZE, WATER_SIZE)
-    ),
-    pygame.transform.scale(
-        pygame.image.load('joe/images/water2.jpg').convert_alpha(),
-        (WATER_SIZE, WATER_SIZE)
-    ),
-]
+WATER_PISTOL_IMG = pygame.transform.scale(
+    pygame.image.load('joe/images/runningWater.png').convert_alpha(),
+    (int(TILE*1.8), int(TILE * 3))
+)
 
-water_group = pygame.sprite.Group()
+WATER_DROP_IMG = pygame.transform.scale(
+    pygame.image.load('joe/images/water2.png').convert_alpha(),
+    (WATER_DROP_SIZE, WATER_DROP_SIZE)
+)
+
+water_group = pygame.sprite.Group()      # unchanged
+
 
 jump_sound = pygame.mixer.Sound("Jack/sounds/sword_whoosh.mp3")
 
@@ -86,9 +86,9 @@ class Player(Entity):
         self.rect = self.image.get_rect(topleft=(x, y))
         self.on_ground = False
         
-        self.last_shoot     = 0           # NEW
-        self.shot_cooldown  = 400         # ms   – NEW
-        self.facing_right   = True        # NEW
+        self.stream_cooldown = 60     # ms between droplets
+        self.last_droplet    = 0
+        self.shooting        = False  # ← NEW flag
 
     def handle_input(self, keys):
         self.vel.x = 0
@@ -100,11 +100,7 @@ class Player(Entity):
             self.vel.y = JUMP_VELOCITY
             jump_sound.play()
         
-        if keys[pygame.K_f] and pygame.time.get_ticks() - self.last_shoot > self.shot_cooldown:
-            direction = 1 if self.facing_right else -1
-            stream = WaterProjectile(self.rect.centerx, self.rect.centery, direction)
-            water_group.add(stream)
-            self.last_shoot = pygame.time.get_ticks()
+        self.shooting = keys[pygame.K_f]
 
     def apply_gravity(self):
         self.vel.y += GRAVITY
@@ -133,22 +129,44 @@ class Player(Entity):
                 self.vel.y = 0
 
     def update(self):
-        # Choose which animation to use
-        if self.vel.x != 0:
-            self.current_images = self.run_images
+        # Stream generation
+        self.spawn_stream()
+
+        # Display pistol if shooting, otherwise normal animation
+        if self.shooting:
+            pistol = WATER_PISTOL_IMG
+            self.image = pistol
         else:
-            self.current_images = self.idle_images
+            # (original idle / run animation code)
+            if self.vel.x != 0:
+                self.current_images = self.run_images
+            else:
+                self.current_images = self.idle_images
 
-        # Update animation frame
-        self.animation_timer += self.animation_speed
-        if self.animation_timer >= 1:
-            self.animation_timer = 0
-            self.frame_index = (self.frame_index + 1) % len(self.current_images)
+            self.animation_timer += self.animation_speed
+            if self.animation_timer >= 1:
+                self.animation_timer = 0
+                self.frame_index = (self.frame_index + 1) % len(self.current_images)
 
-        self.image = self.current_images[self.frame_index]
+            self.image = self.current_images[self.frame_index]
+
         self.rect = self.image.get_rect(topleft=self.rect.topleft)
-
         super().update()
+    
+    def spawn_stream(self):
+        now = pygame.time.get_ticks()
+        if self.shooting and now - self.last_droplet >= self.stream_cooldown:
+            x_off = self.rect.width // 2
+            y_off = 28         # <— adjust this value as you like
+            drop  = WaterDroplet(
+                self.rect.centerx + x_off,
+                self.rect.centery - y_off,
+                1
+            )
+            water_group.add(drop)
+            self.last_droplet = now
+
+
 
 enemy_images_right = [
     pygame.transform.scale(pygame.image.load('joe/images/badGuy1.png').convert_alpha(), (TILE, TILE*1.5)),
@@ -194,34 +212,24 @@ class Enemy(Entity):
         self.image = images[self.frame_index]
         self.rect = self.image.get_rect(topleft=self.rect.topleft)
 
-class WaterProjectile(pygame.sprite.Sprite):
-    SPEED = 7          # pixels per frame
-    ANIM_SPEED = 0.2   # how fast the water animates
+class WaterDroplet(pygame.sprite.Sprite):
+    SPEED       = 8
+    LIFE_TIME   = 1000     # ms before the droplet deletes itself
 
     def __init__(self, x, y, direction):
         super().__init__()
-        self.images = water_images
-        self.frame_index = 0
-        self.animation_timer = 0
-
-        self.image = self.images[0]
-        self.rect = self.image.get_rect(center=(x, y))
-        self.vel = pygame.Vector2(self.SPEED * direction, 0)
+        self.image = WATER_DROP_IMG
+        self.rect  = self.image.get_rect(center=(x, y))
+        self.vel   = pygame.Vector2(self.SPEED * direction, 0)
+        self.spawn_time = pygame.time.get_ticks()
 
     def update(self):
-        # Move
         self.rect.x += self.vel.x
-
-        # Animate
-        self.animation_timer += self.ANIM_SPEED
-        if self.animation_timer >= 1:
-            self.animation_timer = 0
-            self.frame_index = (self.frame_index + 1) % len(self.images)
-            self.image = self.images[self.frame_index]
-
-        # Kill if it leaves the level bounds
+        if (pygame.time.get_ticks() - self.spawn_time) > self.LIFE_TIME:
+            self.kill()
         if self.rect.right < 0 or self.rect.left > LEVEL_WIDTH:
             self.kill()
+
 
 import json
 
@@ -288,11 +296,10 @@ def main():
         sprites.update()
         water_group.update()                       # NEW
 
-        # --- Projectile ⇆ Enemy collisions -------------------------------
-        for stream in water_group:
-            hit_list = pygame.sprite.spritecollide(stream, enemies, dokill=True)
+        for droplet in water_group:
+            hit_list = pygame.sprite.spritecollide(droplet, enemies, dokill=True)
             if hit_list:
-                stream.kill()
+                droplet.kill()
 
         for enemy in enemies:
             if player.rect.colliderect(enemy.rect):
@@ -323,8 +330,9 @@ def main():
         for sprite in sprites:
             screen.blit(sprite.image, sprite.rect.move(-camera_x, 0))
             
-        for stream in water_group:                 # NEW
-            screen.blit(stream.image, stream.rect.move(-camera_x, 0))
+        for droplet in water_group:
+            screen.blit(droplet.image, droplet.rect.move(-camera_x, 0))
+
 
         pygame.draw.rect(screen, FLAG_C, flag.move(-camera_x, 0))
 
