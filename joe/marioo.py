@@ -232,27 +232,25 @@ class WaterDroplet(pygame.sprite.Sprite):
         if self.rect.right < 0 or self.rect.left > LEVEL_WIDTH:
             self.kill()
 
-    def show_title_screen():
+def show_title_screen():
+    original_width, original_height = title_img.get_size()
+    quadrupled_title_img = pygame.transform.scale(title_img, (original_width * 4, original_height * 4))
+    title_rect = quadrupled_title_img.get_rect(center=(WIDTH // 2, HEIGHT // 2))
 
-        original_width, original_height = title_img.get_size()
-        quadrupled_title_img = pygame.transform.scale(title_img, (original_width * 4, original_height * 4))
-        title_rect = quadrupled_title_img.get_rect(center=(WIDTH // 2, HEIGHT // 2))
+    waiting = True
+    while waiting:
+        screen.fill((0, 0, 0))
+        screen.blit(quadrupled_title_img, title_rect)
+        pygame.display.flip()
 
-        waiting = True
-        while waiting:
-            screen.fill((0, 0, 0))
-            screen.blit(quadrupled_title_img, title_rect)
-            pygame.display.flip()
-
-            for event in pygame.event.get():
-                if event.type == pygame.QUIT:
-                    pygame.quit()
-                    sys.exit()
-                if event.type == pygame.KEYDOWN:
-                    if event.key == pygame.K_RETURN:  # Only start on Enter
-                        pygame.mixer.music.stop()
-                        waiting = False
-
+        for event in pygame.event.get():
+            if event.type == pygame.QUIT:
+                pygame.quit()
+                sys.exit()
+            if event.type == pygame.KEYDOWN:
+                if event.key == pygame.K_RETURN:  # Only start on Enter
+                    pygame.mixer.music.stop()
+                    waiting = False
 
 import json
 
@@ -366,4 +364,5 @@ def main():
 
 
 if __name__ == "__main__":
+    show_title_screen()
     main()
