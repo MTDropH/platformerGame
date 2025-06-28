@@ -53,8 +53,6 @@ class Entity(pygame.sprite.Sprite):
         self.rect.x += self.vel.x
         self.rect.y += self.vel.y
 
-# ─ Water stream assets ────────────────────────────────────────────────────
-WATER_PISTOL_SIZE = TILE          # pistol roughly as tall as the player’s head
 WATER_DROP_SIZE   = TILE // 3     # small droplet
 
 WATER_PISTOL_IMG = pygame.transform.scale(
