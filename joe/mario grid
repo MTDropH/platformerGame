@@ -89,8 +89,7 @@ def draw_toolbar():
     boss_label = font.render(boss_info, True, (255, 100, 100))
     screen.blit(boss_label, (10, HEIGHT - 30))
 
-def save_level():
-    filename = f"joe/mario.json"
+def save_level(filename="joe/mario.json"):
     data = {
         "tiles": [{"x": t["rect"].x, "y": t["rect"].y, "width": TILE, "height": TILE, "type": t["type"]} for t in tiles],
         "decorations": [{"x": d["x"], "y": d["y"], "width": TILE, "height": TILE, "type": d["type"]} for d in decorations],
@@ -114,10 +113,9 @@ def clear_level_data():
     boss = None
     flag = None
 
-def load_level():
+def load_level(filename="joe/mario.json"):
     global tiles, decorations, enemies, slimes, powerups, boss, flag
     clear_level_data()
-    filename = f"joe/mario.json"
     try:
         with open(filename, "r") as f:
             data = json.load(f)
@@ -130,7 +128,7 @@ def load_level():
         f_data = data.get("flag", None)
         if f_data:
             flag = pygame.Rect(f_data["x"], f_data["y"], TILE, TILE * 2)
-        print(f"Level {current_level} loaded successfully")
+        print(f"Level {current_level} loaded successfully:", filename)
     except FileNotFoundError:
         print(f"No file for level {current_level}, starting fresh.")
 
@@ -139,7 +137,7 @@ def switch_level():
     # Cycle through levels 1 -> 2 -> 3 -> 1
     current_level = (current_level % 3) + 1
     images = load_images_for_level(current_level)
-    load_level()
+    load_level("joe/mario2.json")
     print(f"Switched to Level {current_level}")
 
 load_level()
@@ -212,7 +210,7 @@ while running:
 
         elif event.type == pygame.KEYDOWN:
             if event.key == pygame.K_s:
-                save_level()
+                save_level("joe/mario2.json")
             if event.key == pygame.K_ESCAPE:
                 running = False
             if event.key == pygame.K_1: mode = 'tile'

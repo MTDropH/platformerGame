@@ -1118,8 +1118,8 @@
   "powerups": [],
   "boss": null,
   "flag": {
-    "x": 3104,
-    "y": 256,
+    "x": 3328,
+    "y": 0,
     "width": 32,
     "height": 64
   }

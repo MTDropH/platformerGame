@@ -254,8 +254,8 @@ def show_title_screen():
 
 import json
 
-def create_level():
-    with open('joe/mario.json', 'r') as f:
+def create_level(filename='joe/mario.json'):
+    with open(filename, 'r') as f:
         data = json.load(f)
 
     tiles = []
@@ -296,8 +296,8 @@ def draw_tiles(surf, tiles, camera_x, tile_image=tile_image):
         shifted_rect = rect.move(-camera_x, 0)
         surf.blit(tile_image, shifted_rect)
 
-def main():
-    tiles, enemies, flag = create_level()
+def main(level_file='joe/mario.json'):
+    tiles, enemies, flag = create_level(level_file)
     player = Player(64, HEIGHT - 5*TILE)
     sprites = pygame.sprite.Group(player, *enemies)
 
@@ -336,11 +336,11 @@ def main():
             player.rect.topleft = (64, HEIGHT - 3*TILE)
             player.vel = pygame.Vector2(0, 0)
 
-        # End condition
         if player.rect.colliderect(flag):
             print("Level complete!")
-            
-            running = False
+            main("joe/mario2.json")
+            return  # Stop the current loop
+
 
         camera_x = max(0, min(player.rect.centerx - WIDTH // 2, LEVEL_WIDTH - WIDTH))
 
