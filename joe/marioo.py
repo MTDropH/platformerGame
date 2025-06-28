@@ -41,7 +41,7 @@ run_images = [
     pygame.transform.scale(pygame.image.load('joe/images/running2RM.png').convert_alpha(), (TILE, int(TILE * 3)))
 ]
 
-title_img = pygame.image.load("Joe/images/titlescreen.png").convert_alpha()
+title_img = pygame.image.load("joe/images/titlescreen.png").convert_alpha()
 
 class Entity(pygame.sprite.Sprite):
     def __init__(self, x, y, w, h, colour):
