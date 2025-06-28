@@ -41,6 +41,8 @@ run_images = [
     pygame.transform.scale(pygame.image.load('joe/images/running2RM.png').convert_alpha(), (TILE, int(TILE * 3)))
 ]
 
+title_img = pygame.image.load("Joe/images/titlescreen.png").convert_alpha()
+
 class Entity(pygame.sprite.Sprite):
     def __init__(self, x, y, w, h, colour):
         super().__init__()
@@ -229,6 +231,27 @@ class WaterDroplet(pygame.sprite.Sprite):
             self.kill()
         if self.rect.right < 0 or self.rect.left > LEVEL_WIDTH:
             self.kill()
+
+    def show_title_screen():
+
+        original_width, original_height = title_img.get_size()
+        quadrupled_title_img = pygame.transform.scale(title_img, (original_width * 4, original_height * 4))
+        title_rect = quadrupled_title_img.get_rect(center=(WIDTH // 2, HEIGHT // 2))
+
+        waiting = True
+        while waiting:
+            screen.fill((0, 0, 0))
+            screen.blit(quadrupled_title_img, title_rect)
+            pygame.display.flip()
+
+            for event in pygame.event.get():
+                if event.type == pygame.QUIT:
+                    pygame.quit()
+                    sys.exit()
+                if event.type == pygame.KEYDOWN:
+                    if event.key == pygame.K_RETURN:  # Only start on Enter
+                        pygame.mixer.music.stop()
+                        waiting = False
 
 
 import json
