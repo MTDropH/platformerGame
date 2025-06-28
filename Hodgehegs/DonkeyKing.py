@@ -1,12 +1,9 @@
-# This week's tasks:
-# - Add a background image
-# - Add sound effects
-# - Make the screen taller, and make the platforms further apart
+
 import sys
 import random
 import pygame
 pygame.mixer.init()
-pygame.mixer.music.load("Hodgehegs/sad-violin_FtcVu13.mp3")
+pygame.mixer.music.load("Hodgehegs/Sounds/sad-violin_FtcVu13.mp3")
 pygame.mixer.music.play(-1)
 pygame.init()
 
@@ -22,9 +19,14 @@ GRAVITY        = 0.6
 PLAYER_SPEED   = 5
 JUMP_VELOCITY  = -9
 TILE           = 32   
+pygame.init()
+screen = pygame.display.set_mode((WIDTH, HEIGHT))
+pygame.display.set_caption("Donkey King")
+clock = pygame.time.Clock()
+font = pygame.font.SysFont("Century Gothic", 24)
 
 pygame.mixer.init()
-pygame.mixer.music.load("Hodgehegs/doingdamage.mp3")
+pygame.mixer.music.load("Hodgehegs/Sounds/doingdamage.mp3")
 pygame.mixer.music.play(-1)
 
 clock = pygame.time.Clock()
@@ -34,21 +36,24 @@ pygame.display.set_caption("Donkey Kong")
 def load(path, w, h):
     return pygame.transform.scale(pygame.image.load(path).convert_alpha(), (w, h))
 
-game_image = load("Hodgehegs/bigboy.jpg", WIDTH, HEIGHT)
+title_screen = load("Hodgehegs/Images/dk.webp", WIDTH, HEIGHT)
+death_screen = load("Hodgehegs/Images/dk_gameover.webp", WIDTH, HEIGHT)
+
+game_image = load("Hodgehegs/Images/bigboy.jpg", WIDTH, HEIGHT)
 player_run_frames  = [
-    load("Hodgehegs/Mario1.png",  TILE, TILE * 2),
-    load("Hodgehegs/Mariorun1.png",  TILE, TILE * 2),
+    load("Hodgehegs/Images/Mario1.png",  TILE, TILE * 2),
+    load("Hodgehegs/Images/Mariorun1.png",  TILE, TILE * 2),
 ]
 player_idle_frames = [
-    load("Hodgehegs/Mario1.png",       TILE, TILE * 2),]
+    load("Hodgehegs/Images/Mario1.png",       TILE, TILE * 2),]
 
 donkey_kong_run_frames = [
-    load("Hodgehegs/Donkey_kong_barrel.png",TILE*2, TILE * 3),
-    load("Hodgehegs/Donkey_kong.png",TILE*2, TILE * 3)
+    load("Hodgehegs/Images/Donkey_kong_barrel.png",TILE*2, TILE * 3),
+    load("Hodgehegs/Images/Donkey_kong.png",TILE*2, TILE * 3)
     ]
 
 donkey_kong_idle_frames = [
-    load("Hodgehegs/Donkey_kong.png",TILE, TILE * 3),]
+    load("Hodgehegs/Images/Donkey_kong.png",TILE, TILE * 3),]
 
 
 class AnimatedEntity(pygame.sprite.Sprite):
@@ -164,55 +169,73 @@ barrel_timer  = 0
 dk_tick      = 0
 dk_frame     = 0
 
-while running:
-    dt = clock.tick(FPS) / 1000          # (dt available if you later need time‑based motion)
+game_state = "start"
 
-    # ── events & quit ────────────
+while True:
+    dt = clock.tick(FPS) / 1000
     for event in pygame.event.get():
         if event.type == pygame.QUIT:
-            running = False
+            pygame.quit()
+            sys.exit()
+    
+    keys = pygame.key.get_pressed()
 
-    # ── barrel spawn timer ───────
+    # ─────────── START SCREEN ────────────
+    if game_state == "start":
+        win.blit(title_screen, (0, 0))
+        if keys[pygame.K_SPACE]:
+            # reset game
+            player.rect.topleft = (50, HEIGHT - player_idle_frames[0].get_height() - 10)
+            barrels.clear()
+            game_state = "playing"
+        pygame.display.update()
+        continue
+
+    # ─────────── DEATH SCREEN ────────────
+    if game_state == "dead":
+        win.blit(death_screen, (0, 0))
+        if keys[pygame.K_SPACE]:
+            # respawn
+            player.rect.topleft = (50, HEIGHT - player_idle_frames[0].get_height() - 10)
+            barrels.clear()
+            game_state = "playing"
+        pygame.display.update()
+        continue
+
+    # ─────────── GAMEPLAY ────────────────
     barrel_timer += 1
-    if barrel_timer > 120:               # every 2 seconds at 60 FPS
+    if barrel_timer > 120:
         spawn_barrel()
         barrel_timer = -1
 
-    # ── input & movement ─────────
-    keys = pygame.key.get_pressed()
     player.handle_input(keys)
     player.apply_gravity()
     player.collide(platforms)
-    sprites.update()                     # (runs animate + pos‑update)
-
+    sprites.update()
     move_and_cull_barrels()
 
-    # ── collisions ───────────────
     if hit_player(player.rect):
-        print("Game Over!")
-        running = False
+        print("Game Over!")
+        game_state = "dead"
+
     if player.rect.colliderect(goal):
-        print("You Win!")
-        running = False
+        print("You Win!")
+        game_state = "start"  # go back to title on win
 
-    # ── rendering ────────────────
-    win.blit(game_image, (0, 0))  # draw background
-
-    # draw geometry
+    # ─────────── RENDERING ───────────────
+    win.blit(game_image, (0, 0))
     for p in platforms:
         pygame.draw.rect(win, BLUE, p)
     for b in barrels:
         pygame.draw.rect(win, BROWN, b)
     pygame.draw.rect(win, GREEN, goal)
 
-    # draw sprites (only player for now)
     for sprite in sprites:
         win.blit(sprite.image, sprite.rect)
-        
-    dk_tick += 1                           
-    if dk_tick % 12 == 0:                   
-        dk_frame = (dk_frame + 1) % len(donkey_kong_run_frames)
 
+    dk_tick += 1
+    if dk_tick % 12 == 0:
+        dk_frame = (dk_frame + 1) % len(donkey_kong_run_frames)
     win.blit(donkey_kong_run_frames[dk_frame], (350, 0))
 
     pygame.display.update()
