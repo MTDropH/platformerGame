@@ -1,6 +1,15 @@
-shopping = []
+shop = {}
 
-shop = input("add to your list")
-while shop == "0":
-    shop = input("add to your list agian")
-    shopping.append(shop)
+continue = False
+
+while shop != 0:
+
+    item = input("item")
+
+    amount = int(input("amount"))
+
+    shop[item] = amount
+
+print(shop)
+    
+    
