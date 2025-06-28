@@ -1,0 +1,6 @@
+sl = {}
+while (what) or (many) != (0):
+    what = input("what do you want to get")
+    many = int(input("how many do you want"))
+    sl[what] = many
+print (sl)
