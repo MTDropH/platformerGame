@@ -2675,6 +2675,7 @@
       "type": "armor"
     }
   ],
+  "boss": null,
   "flag": {
     "x": 3200,
     "y": 320,

@@ -5,8 +5,6 @@ pygame.mixer.init()
 pygame.mixer.music.load("Jack/sounds/8bit-sample-69080.mp3")
 pygame.mixer.music.play(-1)
 
-jump_sound = pygame.mixer.Sound("Jack/sounds/sword_whoosh.mp3")
- 
 WIDTH, HEIGHT = 800, 448
 FPS = 60
 GRAVITY = 0.5
@@ -43,6 +41,8 @@ run_images = [
     pygame.transform.scale(pygame.image.load('joe/images/running2RM.png').convert_alpha(), (TILE, int(TILE * 3)))
 ]
 
+title_img = pygame.image.load("joe/images/titlescreen.png").convert_alpha()
+
 class Entity(pygame.sprite.Sprite):
     def __init__(self, x, y, w, h, colour):
         super().__init__()
@@ -54,6 +54,25 @@ class Entity(pygame.sprite.Sprite):
     def update(self):
         self.rect.x += self.vel.x
         self.rect.y += self.vel.y
+
+WATER_DROP_SIZE   = TILE // 3     # small droplet
+
+WATER_PISTOL_IMG = pygame.transform.scale(
+    pygame.image.load('joe/images/runningWater.png').convert_alpha(),
+    (int(TILE*1.8), int(TILE * 3))
+)
+
+WATER_DROP_IMG = pygame.transform.scale(
+    pygame.image.load('joe/images/water2.png').convert_alpha(),
+    (WATER_DROP_SIZE, WATER_DROP_SIZE)
+)
+
+water_group = pygame.sprite.Group()      # unchanged
+
+
+jump_sound = pygame.mixer.Sound("Jack/sounds/sword_whoosh.mp3")
+
+# Rest of the code remains the same...
 
 class Player(Entity):
     def __init__(self, x, y):
@@ -68,6 +87,10 @@ class Player(Entity):
         self.image = self.idle_images[0]
         self.rect = self.image.get_rect(topleft=(x, y))
         self.on_ground = False
+        
+        self.stream_cooldown = 60     # ms between droplets
+        self.last_droplet    = 0
+        self.shooting        = False  # ← NEW flag
 
     def handle_input(self, keys):
         self.vel.x = 0
@@ -78,6 +101,8 @@ class Player(Entity):
         if (keys[pygame.K_SPACE] or keys[pygame.K_UP]) and self.on_ground:
             self.vel.y = JUMP_VELOCITY
             jump_sound.play()
+        
+        self.shooting = keys[pygame.K_f]
 
     def apply_gravity(self):
         self.vel.y += GRAVITY
@@ -106,26 +131,48 @@ class Player(Entity):
                 self.vel.y = 0
 
     def update(self):
-        # Choose which animation to use
-        if self.vel.x != 0:
-            self.current_images = self.run_images
+        # Stream generation
+        self.spawn_stream()
+
+        # Display pistol if shooting, otherwise normal animation
+        if self.shooting:
+            pistol = WATER_PISTOL_IMG
+            self.image = pistol
         else:
-            self.current_images = self.idle_images
+            # (original idle / run animation code)
+            if self.vel.x != 0:
+                self.current_images = self.run_images
+            else:
+                self.current_images = self.idle_images
 
-        # Update animation frame
-        self.animation_timer += self.animation_speed
-        if self.animation_timer >= 1:
-            self.animation_timer = 0
-            self.frame_index = (self.frame_index + 1) % len(self.current_images)
+            self.animation_timer += self.animation_speed
+            if self.animation_timer >= 1:
+                self.animation_timer = 0
+                self.frame_index = (self.frame_index + 1) % len(self.current_images)
 
-        self.image = self.current_images[self.frame_index]
+            self.image = self.current_images[self.frame_index]
+
         self.rect = self.image.get_rect(topleft=self.rect.topleft)
-
         super().update()
-        
+    
+    def spawn_stream(self):
+        now = pygame.time.get_ticks()
+        if self.shooting and now - self.last_droplet >= self.stream_cooldown:
+            x_off = self.rect.width // 2
+            y_off = 28         # <— adjust this value as you like
+            drop  = WaterDroplet(
+                self.rect.centerx + x_off,
+                self.rect.centery - y_off,
+                1
+            )
+            water_group.add(drop)
+            self.last_droplet = now
+
+
+
 enemy_images_right = [
-    pygame.transform.scale(pygame.image.load('joe/images/badGuy1.png').convert_alpha(), (TILE, TILE*1.5)),
-    pygame.transform.scale(pygame.image.load('joe/images/badGuy2.png').convert_alpha(), (TILE, TILE*1.5))
+    pygame.transform.scale(pygame.image.load('joe/images/badGuy1.png').convert_alpha(), (TILE, TILE*3)),
+    pygame.transform.scale(pygame.image.load('joe/images/badGuy2.png').convert_alpha(), (TILE, TILE*3))
 ]
 
 enemy_images_left = [
@@ -167,10 +214,48 @@ class Enemy(Entity):
         self.image = images[self.frame_index]
         self.rect = self.image.get_rect(topleft=self.rect.topleft)
 
+class WaterDroplet(pygame.sprite.Sprite):
+    SPEED       = 8
+    LIFE_TIME   = 1000     # ms before the droplet deletes itself
+
+    def __init__(self, x, y, direction):
+        super().__init__()
+        self.image = WATER_DROP_IMG
+        self.rect  = self.image.get_rect(center=(x, y))
+        self.vel   = pygame.Vector2(self.SPEED * direction, 0)
+        self.spawn_time = pygame.time.get_ticks()
+
+    def update(self):
+        self.rect.x += self.vel.x
+        if (pygame.time.get_ticks() - self.spawn_time) > self.LIFE_TIME:
+            self.kill()
+        if self.rect.right < 0 or self.rect.left > LEVEL_WIDTH:
+            self.kill()
+
+def show_title_screen():
+    original_width, original_height = title_img.get_size()
+    quadrupled_title_img = pygame.transform.scale(title_img, (original_width * 4, original_height * 4))
+    title_rect = quadrupled_title_img.get_rect(center=(WIDTH // 2, HEIGHT // 2))
+
+    waiting = True
+    while waiting:
+        screen.fill((0, 0, 0))
+        screen.blit(quadrupled_title_img, title_rect)
+        pygame.display.flip()
+
+        for event in pygame.event.get():
+            if event.type == pygame.QUIT:
+                pygame.quit()
+                sys.exit()
+            if event.type == pygame.KEYDOWN:
+                if event.key == pygame.K_RETURN:  # Only start on Enter
+                    pygame.mixer.music.stop()
+                    waiting = False
+
 import json
 
-def create_level():
-    with open('joe/mario.json', 'r') as f:
+def create_level(filename='joe/mario.json'):
+    with open(filename, 'r') as f:
         data = json.load(f)
 
     tiles = []
@@ -211,8 +296,8 @@ def draw_tiles(surf, tiles, camera_x, tile_image=tile_image):
         shifted_rect = rect.move(-camera_x, 0)
         surf.blit(tile_image, shifted_rect)
 
-def main():
-    tiles, enemies, flag = create_level()
+def main(level_file='joe/mario.json'):
+    tiles, enemies, flag = create_level(level_file)
     player = Player(64, HEIGHT - 5*TILE)
     sprites = pygame.sprite.Group(player, *enemies)
 
@@ -230,6 +315,12 @@ def main():
         player.collide(tiles)
 
         sprites.update()
+        water_group.update()                       # NEW
+
+        for droplet in water_group:
+            hit_list = pygame.sprite.spritecollide(droplet, enemies, dokill=True)
+            if hit_list:
+                droplet.kill()
 
         for enemy in enemies:
             if player.rect.colliderect(enemy.rect):
@@ -245,11 +336,11 @@ def main():
             player.rect.topleft = (64, HEIGHT - 3*TILE)
             player.vel = pygame.Vector2(0, 0)
 
-        # End condition
         if player.rect.colliderect(flag):
             print("Level complete!")
-            
-            running = False
+            main("joe/mario2.json")
+            return  # Stop the current loop
+
 
         camera_x = max(0, min(player.rect.centerx - WIDTH // 2, LEVEL_WIDTH - WIDTH))
 
@@ -259,6 +350,10 @@ def main():
         draw_tiles(screen, tiles, camera_x)
         for sprite in sprites:
             screen.blit(sprite.image, sprite.rect.move(-camera_x, 0))
+            
+        for droplet in water_group:
+            screen.blit(droplet.image, droplet.rect.move(-camera_x, 0))
+
 
         pygame.draw.rect(screen, FLAG_C, flag.move(-camera_x, 0))
 
@@ -269,4 +364,5 @@ def main():
 
 
 if __name__ == "__main__":
+    show_title_screen()
     main()

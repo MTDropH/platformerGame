@@ -60,12 +60,12 @@ def load_level_sprites(level_number):
             pygame.image.load("Jack/images/level_2_flag.png").convert_alpha(), (TILE, TILE * 2))
 
         platform_images["dirt"] = pygame.transform.scale(
-            pygame.image.load("Jack/images/level_2_dirt.png").convert_alpha(), (TILE, TILE))
+            pygame.image.load("Jack/images/level_2_dirt1.png").convert_alpha(), (TILE, TILE))
         platform_images["stone_dirt"] = pygame.transform.scale(
-            pygame.image.load("Jack/images/level_2_stone_dirt.png").convert_alpha(), (TILE, TILE))
+            pygame.image.load("Jack/images/level_2_stone_dirt1.png").convert_alpha(), (TILE, TILE))
 
         decoration_images["grass"] = pygame.transform.scale(
-            pygame.image.load("Jack/images/level_2_deco_1.png").convert_alpha(), (TILE, TILE))
+            pygame.image.load("Jack/images/dark_deco_stone.png").convert_alpha(), (TILE, TILE))
         decoration_images["stone"] = pygame.transform.scale(
             pygame.image.load("Jack/images/level_2_deco_2.png").convert_alpha(), (TILE, TILE))
 
@@ -78,7 +78,7 @@ def load_level_sprites(level_number):
             pygame.image.load("Jack/images/evil guy run2.png").convert_alpha(), (TILE, TILE * 2))
 
         # Load background for level 2 (optional if you have different backgrounds)
-        background_img_raw = pygame.image.load("Jack/images/level_2_background.png").convert()
+        background_img_raw = pygame.image.load("Jack/images/new_level_two_background.png").convert()
         background_img = pygame.transform.scale(background_img_raw, (
             int(background_img_raw.get_width() * (HEIGHT / background_img_raw.get_height())), HEIGHT))
 
@@ -537,31 +537,411 @@ class Enemy(AnimatedEntity):
         self.rect.x += self.vel.x
         self.rect.y += self.vel.y
 
+class BossKingSlime(AnimatedEntity):
+    def __init__(self, x, y):
+        # Load king slime sprites (you'll need to create these images)
+        global slime_frames
+        
+        # Ensure slime_frames are loaded first
+        if slime_frames == [None, None] or slime_frames is None:
+            load_slime_sprites()
+        
+        try:
+            king_slime_frames = [
+                pygame.transform.scale(pygame.image.load("Jack/images/king_goober1.png").convert_alpha(), (TILE * 3, TILE * 3)),
+                pygame.transform.scale(pygame.image.load("Jack/images/king_goober2.png").convert_alpha(), (TILE * 3, TILE * 3))
+            ]
+        except:
+            # Fallback: use scaled up regular slime frames
+            if slime_frames and slime_frames[0] is not None:
+                king_slime_frames = [
+                    pygame.transform.scale(slime_frames[0], (TILE * 3, TILE * 3)),
+                    pygame.transform.scale(slime_frames[1], (TILE * 3, TILE * 3))
+                ]
+            else:
+                # Final fallback: use enemy frames
+                king_slime_frames = [
+                    pygame.transform.scale(enemy_frames[0], (TILE * 3, TILE * 3)),
+                    pygame.transform.scale(enemy_frames[1], (TILE * 3, TILE * 3))
+                ]
+        
+        super().__init__(x, y, king_slime_frames, animation_speed=0.05)
+        
+        # Boss stats
+        self.max_health = 5
+        self.health = self.max_health
+        self.jump_height = 12
+        self.slam_damage_radius = TILE * 2
+        self.on_ground = False
+        self.vel.x = 0
+        
+        # Attack patterns
+        self.attack_timer = 2.0  # Start with initial delay
+        self.attack_cooldown = 3.0  # Time between attacks
+        self.current_attack = "jump"  # "jump", "slam", "spawn_minions"
+        self.attack_phase = 0  # Current phase of attack
+        
+        # Slam attack variables
+        self.is_slamming = False
+        self.slam_charge_time = 1.0
+        self.slam_timer = 0
+        
+        # Minion spawning
+        self.minions_spawned = 0
+        self.max_minions = 3
+        self.spawn_timer = 0
+        
+        # Movement
+        self.move_speed = 1
+        self.move_timer = 0
+        self.move_direction = 1
+        self.patrol_range = TILE * 8
+        self.start_x = x
+        
+        # Visual effects
+        self.hit_flash_timer = 0
+        self.invincible = False
+        self.invincibility_timer = 0
+        
+        # Add state tracking
+        self.is_attacking = False
+        
+        # Sound effects (optional) - with better error handling
+        self.roar_sound = None
+        self.slam_sound = None
+        try:
+            self.roar_sound = pygame.mixer.Sound("Jack/sounds/boss_roar.mp3")
+        except:
+            pass
+        try:
+            self.slam_sound = pygame.mixer.Sound("Jack/sounds/boss_slam.mp3")
+        except:
+            pass
+    
+    def take_damage(self):
+        """Handle taking damage from player attacks"""
+        if not self.invincible:
+            self.health -= 1
+            self.hit_flash_timer = 0.3
+            self.invincible = True
+            self.invincibility_timer = 0.8
+            
+            if self.roar_sound:
+                self.roar_sound.play()
+            
+            # Get more aggressive as health decreases
+            if self.health <= 2:
+                self.attack_cooldown = 2.0  # Attack more frequently
+                self.jump_height = 15  # Jump higher
+            
+            return self.health <= 0  # Return True if boss is defeated
+        return False
+    
+    def apply_gravity(self):
+        if not self.on_ground:
+            self.vel.y += GRAVITY
+            if self.vel.y > TILE * 2:  # Boss falls faster
+                self.vel.y = TILE * 2
+    
+    def patrol_movement(self):
+        """Simple patrol movement when not attacking"""
+        if not self.is_attacking:
+            # Move horizontally within patrol range
+            target_left = self.start_x - self.patrol_range // 2
+            target_right = self.start_x + self.patrol_range // 2
+            
+            if self.rect.centerx <= target_left:
+                self.move_direction = 1
+            elif self.rect.centerx >= target_right:
+                self.move_direction = -1
+            
+            self.vel.x = self.move_direction * self.move_speed
+    
+    def jump_attack(self, player):
+        """Jump towards the player"""
+        if self.on_ground and not self.is_attacking:
+            # Calculate direction to player
+            direction = 1 if player.rect.centerx > self.rect.centerx else -1
+            
+            # Jump towards player
+            self.vel.y = -self.jump_height
+            self.vel.x = direction * 3  # Horizontal velocity towards player
+            
+            self.is_attacking = True
+            return True  # Attack completed
+        elif not self.on_ground and self.is_attacking:
+            # Keep moving horizontally while in air
+            return False
+        elif self.on_ground and self.is_attacking:
+            # Landed, stop attacking
+            self.is_attacking = False
+            self.vel.x = 0
+            return True
+        return False
+    
+    def slam_attack(self, player):
+        """Charge up and slam down with area damage"""
+        if self.attack_phase == 0:  # Start charge phase
+            self.is_slamming = True
+            self.is_attacking = True
+            self.slam_timer = self.slam_charge_time
+            self.attack_phase = 1
+            self.vel.x = 0  # Stop moving
+            return False
+        
+        elif self.attack_phase == 1:  # Charging
+            self.slam_timer -= 1 / FPS
+            if self.slam_timer <= 0:
+                # Execute slam
+                self.vel.y = TILE * 2  # Fast downward velocity
+                self.attack_phase = 2
+            return False
+        
+        elif self.attack_phase == 2:  # Slamming down
+            if self.on_ground:
+                # Slam impact - deal area damage
+                if self.slam_sound:
+                    self.slam_sound.play()
+                
+                # Check if player is within damage radius
+                distance = abs(player.rect.centerx - self.rect.centerx)
+                if distance <= self.slam_damage_radius:
+                    # Player takes damage from slam
+                    if player.take_damage():  # Use player's take_damage method
+                        # Knockback player
+                        knockback_dir = 1 if player.rect.centerx > self.rect.centerx else -1
+                        player.hurt_knockback = pygame.Vector2(knockback_dir * 5, -3)
+                
+                self.is_slamming = False
+                self.is_attacking = False
+                self.attack_phase = 0
+                return True  # Attack completed
+        
+        return False
+    
+    def spawn_minions_attack(self, slimes_group):
+        """Spawn small slimes as minions"""
+        if not self.is_attacking:
+            self.is_attacking = True
+            self.minions_spawned = 0
+            self.spawn_timer = 0.5
+        
+        if self.minions_spawned < self.max_minions:
+            self.spawn_timer -= 1 / FPS
+            if self.spawn_timer <= 0:
+                # Spawn a minion slime on either side of the boss
+                side = 1 if self.minions_spawned % 2 == 0 else -1
+                spawn_x = self.rect.centerx + (side * TILE * 2)
+                spawn_y = self.rect.bottom - TILE
+                
+                minion = Slime(spawn_x, spawn_y, jump_height=6, jump_interval=1.5)
+                slimes_group.add(minion)
+                
+                self.minions_spawned += 1
+                self.spawn_timer = 0.5  # Delay between spawns
+        
+        if self.minions_spawned >= self.max_minions:
+            self.is_attacking = False
+            return True  # Attack completed
+        
+        return False
+    
+    def choose_next_attack(self):
+        """Choose the next attack pattern"""
+        import random
+        
+        if self.health <= 2:
+            # More aggressive attacks when low health
+            attacks = ["slam", "jump", "spawn_minions"]
+            weights = [40, 40, 20]  # Prefer slam and jump
+        else:
+            attacks = ["jump", "slam", "spawn_minions"]
+            weights = [50, 30, 20]  # Prefer jumping
+        
+        self.current_attack = random.choices(attacks, weights=weights)[0]
+        self.attack_phase = 0
+    
+    def collide(self, tiles):
+        """Handle collision with tiles"""
+        # Vertical collision first
+        old_y = self.rect.y
+        self.rect.y += self.vel.y
+        
+        self.on_ground = False
+        for tile in tiles:
+            if self.rect.colliderect(tile):
+                if self.vel.y > 0:  # Falling down
+                    self.rect.bottom = tile.top
+                    self.vel.y = 0
+                    self.on_ground = True
+                elif self.vel.y < 0:  # Moving up
+                    self.rect.top = tile.bottom
+                    self.vel.y = 0
+        
+        # Horizontal collision
+        old_x = self.rect.x
+        self.rect.x += self.vel.x
+        
+        for tile in tiles:
+            if self.rect.colliderect(tile):
+                if self.vel.x > 0:  # Moving right
+                    self.rect.right = tile.left
+                    self.vel.x = 0
+                    self.move_direction = -1  # Change direction
+                elif self.vel.x < 0:  # Moving left
+                    self.rect.left = tile.right
+                    self.vel.x = 0
+                    self.move_direction = 1  # Change direction
+    
+    def update(self, player=None, tiles=None, slimes_group=None):
+        """Main update method"""
+        if not player:
+            return
+            
+        # Handle invincibility
+        if self.invincible:
+            self.invincibility_timer -= 1 / FPS
+            if self.invincibility_timer <= 0:
+                self.invincible = False
+        
+        # Handle hit flash effect
+        if self.hit_flash_timer > 0:
+            self.hit_flash_timer -= 1 / FPS
+        
+        # Attack logic
+        self.attack_timer -= 1 / FPS
+        
+        attack_completed = False
+        if self.attack_timer <= 0 or self.is_attacking:
+            # Execute current attack
+            if self.current_attack == "jump":
+                if self.jump_attack(player):
+                    self.attack_timer = self.attack_cooldown
+                    self.choose_next_attack()
+                    attack_completed = True
+            
+            elif self.current_attack == "slam":
+                if self.slam_attack(player):
+                    self.attack_timer = self.attack_cooldown
+                    self.choose_next_attack()
+                    attack_completed = True
+            
+            elif self.current_attack == "spawn_minions":
+                if slimes_group and self.spawn_minions_attack(slimes_group):
+                    self.attack_timer = self.attack_cooldown
+                    self.choose_next_attack()
+                    attack_completed = True
+        
+        # Movement when not attacking
+        if not self.is_attacking and not self.is_slamming:
+            self.patrol_movement()
+        
+        # Apply physics
+        self.apply_gravity()
+        if tiles:
+            self.collide(tiles)
+        
+        # Animation
+        self.frame_index += self.animation_speed
+        if self.frame_index >= len(self.frames):
+            self.frame_index = 0
+        
+        frame = self.frames[int(self.frame_index)]
+        
+        # Flip sprite based on movement direction
+        if self.vel.x < 0 or self.move_direction < 0:
+            frame = pygame.transform.flip(frame, True, False)
+        
+        # Visual effects
+        if self.hit_flash_timer > 0 and int(pygame.time.get_ticks() / 50) % 2 == 0:
+            # Flash red when hit
+            flash_surface = frame.copy()
+            flash_surface.fill((255, 100, 100), special_flags=pygame.BLEND_ADD)
+            self.image = flash_surface
+        elif self.is_slamming and self.attack_phase == 1:
+            # Flash white when charging slam
+            flash_surface = frame.copy()
+            flash_surface.fill((255, 255, 255), special_flags=pygame.BLEND_ADD)
+            self.image = flash_surface
+        else:
+            self.image = frame
+    
+    def draw_health_bar(self, surface, camera_x):
+        """Draw boss health bar"""
+        if self.health <= 0:
+            return
+            
+        bar_width = 200
+        bar_height = 20
+        bar_x = self.rect.centerx - bar_width // 2 - camera_x
+        bar_y = self.rect.top - 40
+        
+        # Make sure health bar stays on screen
+        if bar_x < 10:
+            bar_x = 10
+        elif bar_x + bar_width > WIDTH - 10:
+            bar_x = WIDTH - bar_width - 10
+            
+        if bar_y < 10:
+            bar_y = 10
+        
+        # Background
+        pygame.draw.rect(surface, (100, 0, 0), (bar_x, bar_y, bar_width, bar_height))
+        
+        # Health
+        health_width = int((self.health / self.max_health) * bar_width)
+        if health_width > 0:
+            pygame.draw.rect(surface, (255, 0, 0), (bar_x, bar_y, health_width, bar_height))
+        
+        # Border
+        pygame.draw.rect(surface, (255, 255, 255), (bar_x, bar_y, bar_width, bar_height), 2)
+        
+        # Boss name
+        try:
+            font = pygame.font.SysFont("Arial", 16)
+            name_text = font.render("KING SLIME", True, (255, 255, 255))
+            name_x = bar_x + bar_width // 2 - name_text.get_width() // 2
+            surface.blit(name_text, (name_x, bar_y - 25))
+        except:
+            pass  # Skip text if font fails
+
+# Fixed load_slime_sprites function
+def load_slime_sprites():
+    """Load slime sprites - call this before creating any slimes"""
+    global slime_frames
+    try:
+        slime_frames = [
+            pygame.transform.scale(pygame.image.load("Jack/images/goober1.png").convert_alpha(), (TILE, TILE)),
+            pygame.transform.scale(pygame.image.load("Jack/images/goober2.png").convert_alpha(), (TILE, TILE))
+        ]
+    except Exception as e:
+        print(f"Could not load slime sprites: {e}")
+        # Fallback to enemy frames
+        slime_frames = [
+            pygame.transform.scale(enemy_frames[0], (TILE, TILE)),
+            pygame.transform.scale(enemy_frames[1], (TILE, TILE))
+        ]
+
+# Updated Slime class with better initialization
 class Slime(AnimatedEntity):
     def __init__(self, x, y, jump_height=8, jump_interval=2.0):
-        # Initialize slime_frames if not already done
+        # Ensure slime_frames are loaded
         global slime_frames
-        if slime_frames == [None, None]:
-            try:
-                slime_frames = [
-                    pygame.transform.scale(pygame.image.load("Jack/images/goober1.png").convert_alpha(), (TILE, TILE)),
-                    pygame.transform.scale(pygame.image.load("Jack/images/goober2.png").convert_alpha(), (TILE, TILE))
-                ]
-            except:
-                # Fallback to enemy frames if slime images don't exist
-                slime_frames = enemy_frames
+        if slime_frames == [None, None] or slime_frames is None:
+            load_slime_sprites()
         
         super().__init__(x, y, slime_frames)
         self.jump_height = jump_height
         self.jump_interval = jump_interval  # Time between jumps in seconds
-        self.jump_timer = 0
+        self.jump_timer = jump_interval  # Start with full timer
         self.on_ground = False
         self.vel.x = 0  # Slime doesn't move horizontally
         
     def apply_gravity(self):
-        self.vel.y += GRAVITY
-        if self.vel.y > TILE:
-            self.vel.y = TILE
+        if not self.on_ground:
+            self.vel.y += GRAVITY
+            if self.vel.y > TILE:
+                self.vel.y = TILE
     
     def jump(self):
         """Make the slime jump"""
@@ -570,29 +950,27 @@ class Slime(AnimatedEntity):
             self.jump_timer = self.jump_interval
     
     def collide(self, tiles):
-        # Vertical collision (same as Enemy class)
+        # Vertical collision
         self.rect.y += self.vel.y
-        vertical_hits = [t for t in tiles if self.rect.colliderect(t)]
         self.on_ground = False
-        for tile in vertical_hits:
-            if self.vel.y > 0:  # Falling down
-                self.rect.bottom = tile.top
-                self.vel.y = 0
-                self.on_ground = True
-            elif self.vel.y < 0:  # Moving up (head hit)
-                self.rect.top = tile.bottom
-                self.vel.y = 0
-        
-        # No horizontal collision needed since slime doesn't move horizontally
+        for tile in tiles:
+            if self.rect.colliderect(tile):
+                if self.vel.y > 0:  # Falling down
+                    self.rect.bottom = tile.top
+                    self.vel.y = 0
+                    self.on_ground = True
+                elif self.vel.y < 0:  # Moving up (head hit)
+                    self.rect.top = tile.bottom
+                    self.vel.y = 0
     
     def update(self, player=None, tiles=None):
         # Handle jump timing
         if self.jump_timer > 0:
-            self.jump_timer -= 2 / FPS
+            self.jump_timer -= 1 / FPS
         else:
             self.jump()  # Jump when timer reaches 0
         
-        # Animation (flips based on player position for visual interest)
+        # Animation
         self.frame_index += self.animation_speed
         if self.frame_index >= len(self.frames):
             self.frame_index = 0
@@ -608,9 +986,29 @@ class Slime(AnimatedEntity):
         self.apply_gravity()
         if tiles:
             self.collide(tiles)
+    
+    def draw_health_bar(self, surface, camera_x):
+        """Draw boss health bar"""
+        bar_width = 200
+        bar_height = 20
+        bar_x = self.rect.centerx - bar_width // 2 - camera_x
+        bar_y = self.rect.top - 40
         
-        # Update position (only Y changes due to jumping/gravity)
-        self.rect.y += self.vel.y
+        # Background
+        pygame.draw.rect(surface, (100, 0, 0), (bar_x, bar_y, bar_width, bar_height))
+        
+        # Health
+        health_width = int((self.health / self.max_health) * bar_width)
+        pygame.draw.rect(surface, (255, 0, 0), (bar_x, bar_y, health_width, bar_height))
+        
+        # Border
+        pygame.draw.rect(surface, (255, 255, 255), (bar_x, bar_y, bar_width, bar_height), 2)
+        
+        # Boss name
+        font = pygame.font.SysFont("Arial", 16)
+        name_text = font.render("KING SLIME", True, (255, 255, 255))
+        name_x = bar_x + bar_width // 2 - name_text.get_width() // 2
+        surface.blit(name_text, (name_x, bar_y - 25))
 
 class PowerUp(pygame.sprite.Sprite):
     def __init__(self, x, y, type="health"):
@@ -770,8 +1168,8 @@ def draw_lives(surf, lives):
     elif lives == 1:
         surf.blit(life1_img, (10, 10))
 
-def create_level(filename='Jack/level1.json'):
-    """Load level data from JSON file"""
+def create_level_with_boss(filename='Jack/level1.json'):
+    """Load level data from JSON file with boss support"""
     try:
         with open(filename, 'r') as f:
             data = json.load(f)
@@ -799,13 +1197,22 @@ def create_level(filename='Jack/level1.json'):
         enemy = Enemy(enemy_data["x"], enemy_data["y"], enemy_data["left_bound"], enemy_data["right_bound"])
         enemies.add(enemy)
     
-    # Add slimes (if they exist in the level data)
+    # Add slimes
     slimes = pygame.sprite.Group()
     for slime_data in data.get("slimes", []):
         jump_height = slime_data.get("jump_height", 8)
         jump_interval = slime_data.get("jump_interval", 2.0)
         slime = Slime(slime_data["x"], slime_data["y"], jump_height, jump_interval)
         slimes.add(slime)
+    
+    # Add boss (FIXED: Check for "boss" type instead of "king_slime")
+    boss = None
+    boss_data = data.get("boss")
+    if boss_data and boss_data.get("type") == "boss":  # Changed from "king_slime" to "boss"
+        boss = BossKingSlime(boss_data["x"], boss_data["y"])
+        print(f"Boss created at ({boss_data['x']}, {boss_data['y']})")  # Debug print
+    else:
+        print(f"Boss data: {boss_data}")  # Debug print to see what's in the data
 
     flag_data = data["flag"]
     flag = pygame.Rect(flag_data["x"], flag_data["y"], flag_data["width"], flag_data["height"])
@@ -815,7 +1222,8 @@ def create_level(filename='Jack/level1.json'):
         powerup = PowerUp(powerup_data["x"], powerup_data["y"], powerup_data.get("type", "health"))
         powerups.add(powerup)
 
-    return tiles, tile_types, decorations, enemies, slimes, flag, powerups
+    return tiles, tile_types, decorations, enemies, slimes, flag, powerups, boss
+
 
 def main(level_number=1):
     if level_number == 1:
@@ -831,12 +1239,20 @@ def main(level_number=1):
     pygame.mixer.music.play(-1)
 
     level_file = f'Jack/level{level_number}.json'
-    tiles, tile_types, decorations, enemies, slimes, flag, powerups = create_level(level_file)
+    tiles, tile_types, decorations, enemies, slimes, flag, powerups, boss = create_level_with_boss(level_file)
 
     player = Player(64, HEIGHT - 3 * TILE)
     player.arrow_group = pygame.sprite.Group()
 
-    sprites = pygame.sprite.Group(player, *enemies, *slimes, *powerups)  # Added slimes to sprites group
+    sprites = pygame.sprite.Group(player, *enemies, *slimes, *powerups)
+    if boss:
+        sprites.add(boss)  
+
+    # Boss AI timing variables
+    boss_attack_timer = 0
+    boss_move_timer = 0
+    boss_special_attack_timer = 0
+    boss_invulnerability_timer = 0
 
     running = True
     while running:
@@ -870,6 +1286,72 @@ def main(level_number=1):
             
         for slime in slimes:
             slime.update(player, tiles)
+
+        # Enhanced Boss AI
+        if boss and boss.health > 0:
+            # Update boss timers
+            boss_attack_timer += dt
+            boss_move_timer += dt
+            boss_special_attack_timer += dt
+            boss_invulnerability_timer -= dt
+
+            # Calculate distance to player
+            distance_to_player = abs(boss.rect.centerx - player.rect.centerx)
+            player_below = player.rect.centery > boss.rect.centery
+            
+            # Boss movement AI - more intelligent positioning
+            if boss_move_timer > 1.0:  # Move decision every second
+                boss_move_timer = 0
+                
+                # If player is too close, try to maintain distance
+                if distance_to_player < 150:
+                    if player.rect.centerx < boss.rect.centerx:
+                        boss.target_direction = 1  # Move right
+                    else:
+                        boss.target_direction = -1  # Move left
+                # If player is too far, move closer
+                elif distance_to_player > 300:
+                    if player.rect.centerx < boss.rect.centerx:
+                        boss.target_direction = -1  # Move left
+                    else:
+                        boss.target_direction = 1  # Move right
+                else:
+                    boss.target_direction = 0  # Stay in position
+
+            # Boss attack patterns based on health
+            health_percentage = boss.health / boss.max_health if hasattr(boss, 'max_health') else 1.0
+            
+            # Basic attack - more frequent when health is low
+            attack_cooldown = 2.0 if health_percentage > 0.5 else 1.5
+            if boss_attack_timer > attack_cooldown and distance_to_player < 200:
+                boss_attack_timer = 0
+                # Trigger boss basic attack (you'll need to implement this in boss class)
+                if hasattr(boss, 'attack'):
+                    boss.attack(player)
+
+            # Special attack - triggered at certain health thresholds
+            special_cooldown = 8.0 if health_percentage > 0.3 else 5.0
+            if boss_special_attack_timer > special_cooldown:
+                boss_special_attack_timer = 0
+                # Trigger special attack based on health
+                if health_percentage <= 0.3:  # Desperate phase
+                    if hasattr(boss, 'desperate_attack'):
+                        boss.desperate_attack(player)
+                elif health_percentage <= 0.6:  # Angry phase
+                    if hasattr(boss, 'special_attack'):
+                        boss.special_attack(player)
+
+            # Update boss with original parameters (compatible with existing boss class)
+            boss.update(player, tiles, slimes)
+            
+            # Apply enhanced AI movement if boss has the attributes
+            if hasattr(boss, 'target_direction'):
+                if boss.target_direction == 1:
+                    boss.vel.x = min(boss.vel.x + 100 * dt, 50)  # Move right
+                elif boss.target_direction == -1:
+                    boss.vel.x = max(boss.vel.x - 100 * dt, -50)  # Move left
+                else:
+                    boss.vel.x *= 0.9  # Slow down when not moving
 
         sprites.update()
         attack_rect = player.get_attack_hitbox()
@@ -944,6 +1426,55 @@ def main(level_number=1):
                                 return "restart"
                             return "quit"
 
+        # Enhanced boss combat with invulnerability frames
+        if boss and boss.health > 0:
+            # Check if player attacks hit the boss (with invulnerability check)
+            if attack_rect and attack_rect.colliderect(boss.rect) and boss_invulnerability_timer <= 0:
+                if boss.take_damage():
+                    # Boss defeated!
+                    boss = None
+                    # Maybe spawn a special powerup or trigger level completion
+                else:
+                    boss_invulnerability_timer = 0.5  # Brief invulnerability after hit
+                    # Boss hit reaction - could trigger rage mode
+                    if hasattr(boss, 'on_hit'):
+                        boss.on_hit(player)
+
+            # Check arrow hits on boss (with invulnerability check)
+            for arrow in list(player.arrow_group):
+                if arrow.rect.colliderect(boss.rect) and boss_invulnerability_timer <= 0:
+                    arrow.kill()
+                    if boss.take_damage():
+                        boss = None
+                    else:
+                        boss_invulnerability_timer = 0.5
+                        if hasattr(boss, 'on_hit'):
+                            boss.on_hit(player)
+
+            # Check boss collision with player - enhanced damage system
+            if boss and player.rect.colliderect(boss.rect) and not player.invincible:
+                # Different damage based on boss attack state
+                damage = 1
+                if hasattr(boss, 'is_attacking') and boss.is_attacking:
+                    damage = 2  # More damage during boss attacks
+                
+                player.lives -= damage
+                player.invincible = True
+                player.invincibility_timer = 2.0  # Longer invincibility after boss hit
+                
+                # Knockback effect
+                knockback_force = 200
+                if player.rect.centerx < boss.rect.centerx:
+                    player.vel.x = -knockback_force
+                else:
+                    player.vel.x = knockback_force
+                
+                if player.lives <= 0:
+                    result = show_game_over_screen()
+                    if result == "restart":
+                        return "restart"
+                    return "quit"
+
         # Handle powerup collection
         for powerup in list(powerups):  # Use list() to avoid modification during iteration
             if player.rect.colliderect(powerup.rect):
@@ -958,14 +1489,16 @@ def main(level_number=1):
 
         # Check for level completion
         if player.rect.colliderect(flag):
-            print("Level complete!")
-            result = show_level_complete_screen(level_number)
-            if result == "restart":
-                return "restart"
-            if level_number >= 3:
-                return "complete"  # Game completed
-            else:
-                return "next_level"  # Go to next level
+            # Only allow completion if boss is defeated (if there was one)
+            if not boss or boss.health <= 0:
+                print("Level complete!")
+                result = show_level_complete_screen(level_number)
+                if result == "restart":
+                    return "restart"
+                if level_number >= 3:
+                    return "complete"  # Game completed
+                else:
+                    return "next_level"  # Go to next level
 
         camera_x = max(0, min(player.rect.centerx - WIDTH // 2, LEVEL_WIDTH - WIDTH))
 
@@ -977,7 +1510,18 @@ def main(level_number=1):
         
         # Draw all sprites
         for sprite in sprites:
+            # Boss flashing effect when hit
+            if sprite == boss and boss_invulnerability_timer > 0:
+                if int(boss_invulnerability_timer * 20) % 2:  # Flash effect
+                    continue  # Skip drawing this frame
             screen.blit(sprite.image, sprite.rect.move(-camera_x, 0))
+
+        # Draw boss
+        if boss and boss.health > 0:
+            # Skip drawing if flashing
+            if not (boss_invulnerability_timer > 0 and int(boss_invulnerability_timer * 20) % 2):
+                screen.blit(boss.image, (boss.rect.x - camera_x, boss.rect.y))
+            boss.draw_health_bar(screen, camera_x)
 
         # Draw attack sword
         if attack_rect:

@@ -162,10 +162,42 @@ def draw_tiles(surf, tiles, camera_x):
         shifted_rect = rect.move(-camera_x, 0)
         surf.blit(image, shifted_rect.topleft)
 
+def start_screen():
+    font = pygame.font.Font(None, 72)
+    text = font.render("Press SPACE to Start", True, (255,255,255))
+    text_rect = text.get_rect(center=(WIDTH//2, HEIGHT//2))
+
+    waiting = True
+    while waiting:
+        screen.fill((0,0,0))
+        screen.blit(text, text_rect)
+        pygame.display.flip()
+        for event in pygame.event.get():
+            if event.type == pygame.QUIT:
+                pygame.quit()
+                sys.exit()
+            if event.type == pygame.KEYDOWN and event.key in [pygame.K_SPACE, pygame.K_RETURN]:
+                waiting = False
+
+def game_over_screen():
+    game_over_img = pygame.image.load("caye/gameOver.jpeg").convert_alpha()
+    game_over_img = pygame.transform.scale(game_over_img, (WIDTH, HEIGHT))
+    waiting = True
+    while waiting:
+        screen.blit(game_over_img, (0,0))
+        pygame.display.flip()
+        for event in pygame.event.get():
+            if event.type == pygame.QUIT:
+                pygame.quit()
+                sys.exit()
+            if event.type == pygame.KEYDOWN and event.key in [pygame.K_ESCAPE, pygame.K_RETURN]:
+                waiting = False
+
 
 onetime = 0
 def main():
     global onetime
+    start_screen()
     tiles, enemies, flag = create_level()
     player = Player(64, HEIGHT - 3*TILE)
     sprites = pygame.sprite.Group(player, *enemies)
@@ -197,44 +229,46 @@ def main():
                     player.rect.topleft = (64, HEIGHT - 3*TILE)
                     player.vel = pygame.Vector2(0, 0)
                     death_sound.play()
-                    player.LIVES-=1
+                    player.LIVES -= 1
                     if player.LIVES < 1:
+                        game_over_screen()
                         running = False
 
         camera_x = max(0, min(player.rect.centerx - WIDTH // 2, LEVEL_WIDTH - WIDTH))
 
-        
+        # Background
         for x in range(0, WIDTH * 3, background_width):
             screen.blit(background_img, (x - camera_x * background_scroll_speed, 0))
         draw_tiles(screen, tiles, camera_x)
+
         for sprite in sprites:
             screen.blit(sprite.image, sprite.rect.move(-camera_x, 0))
-            
-        # player.draw(screen)
 
-        if (onetime == 0) and (len(enemies) == 0):
+        if onetime == 0 and len(enemies) == 0:
+            # Second wave
             new_enemy = Enemy(1020, HEIGHT - 5*TILE, 300, 1500)
             new_enemy2 = Enemy(720, HEIGHT - 5*TILE, 200, 900)
             new_enemy3 = Enemy(720, HEIGHT - 7*TILE, 399, 400, (102, 0, 0))
-            enemies.add(new_enemy)
-            sprites.add(new_enemy)
-            enemies.add(new_enemy2)
-            sprites.add(new_enemy2)
-            enemies.add(new_enemy3)
-            sprites.add(new_enemy3)
+            enemies.add(new_enemy, new_enemy2, new_enemy3)
+            sprites.add(new_enemy, new_enemy2, new_enemy3)
             onetime = 1
-            
+
         if onetime == 1:
-            pygame.draw.rect(screen, FLAG_C, flag.move(-camera_x,-0))
+            pygame.draw.rect(screen, FLAG_C, flag.move(-camera_x,0))
             if player.rect.colliderect(flag):
-                print("Level.complete!")
+                print("Level complete!")
                 running = False
+
+        # Draw Lives
+        font = pygame.font.Font(None, 36)
+        lives_text = font.render(f"Lives: {player.LIVES}", True, (255,255,255))
+        screen.blit(lives_text, (10,10))
 
         pygame.display.update()
 
     pygame.quit()
-    sys.exit()
 
+    sys.exit()
 
 if __name__ == "__main__":
     main()

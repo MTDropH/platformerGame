@@ -26,12 +26,12 @@ def load_images_for_level(level):
         }
     elif level == 2:
         return {
-            "platform": pygame.transform.scale(pygame.image.load("Jack/images/level_2_dirt.png").convert_alpha(), (TILE, TILE)),
-            "stone_dirt": pygame.transform.scale(pygame.image.load("Jack/images/level_2_stone_dirt.png").convert_alpha(), (TILE, TILE)),
+            "platform": pygame.transform.scale(pygame.image.load("Jack/images/level_2_dirt1.png").convert_alpha(), (TILE, TILE)),
+            "stone_dirt": pygame.transform.scale(pygame.image.load("Jack/images/level_2_stone_dirt1.png").convert_alpha(), (TILE, TILE)),
             "flag": pygame.transform.scale(pygame.image.load("Jack/images/level_2_flag.png").convert_alpha(), (TILE, TILE * 2)),
             "powerup": pygame.transform.scale(pygame.image.load("Jack/images/armour polish.png").convert_alpha(), (TILE, TILE)),
             "bow_powerup": pygame.transform.scale(pygame.image.load("Jack/images/bow_power_up.png").convert_alpha(), (TILE, TILE)),
-            "grass": pygame.transform.scale(pygame.image.load("Jack/images/level_2_deco_1.png").convert_alpha(), (TILE, TILE)),
+            "grass": pygame.transform.scale(pygame.image.load("Jack/images/dark_deco_stone.png").convert_alpha(), (TILE, TILE)),
             "stone": pygame.transform.scale(pygame.image.load("Jack/images/level_2_deco_2.png").convert_alpha(), (TILE, TILE)),
         }
     elif level == 3:
@@ -52,8 +52,9 @@ images = load_images_for_level(current_level)
 tiles = []
 decorations = []
 enemies = []
-slimes = []  # New list for slimes
+slimes = []
 powerups = []
+boss = None  # Boss data
 flag = None
 camera_x = 0
 mode = 'tile'
@@ -65,7 +66,7 @@ def draw_grid():
         pygame.draw.line(screen, (200, 200, 200), (0, y), (WIDTH, y))
 
 def draw_toolbar():
-    modes = ["tile", "stone_dirt", "grass", "stone", "enemy", "slime", "powerup", "bow_powerup", "flag", "delete"]
+    modes = ["tile", "stone_dirt", "grass", "stone", "enemy", "slime", "powerup", "bow_powerup", "boss", "flag", "delete"]
     spacing = WIDTH // len(modes)  # Dynamically calculate spacing based on screen width
 
     for i, m in enumerate(modes):
@@ -77,11 +78,16 @@ def draw_toolbar():
 
     # Show current level and controls
     level_label = font.render(f"Editing Level {current_level}", True, (255, 255, 255))
-    screen.blit(level_label, (10, HEIGHT - 50))
+    screen.blit(level_label, (10, HEIGHT - 70))
     
     # Show level switching instructions
     switch_label = font.render("Press L to switch levels (1-3)", True, (200, 200, 200))
-    screen.blit(switch_label, (10, HEIGHT - 30))
+    screen.blit(switch_label, (10, HEIGHT - 50))
+    
+    # Show boss info
+    boss_info = f"Boss: {'Placed' if boss else 'None'}"
+    boss_label = font.render(boss_info, True, (255, 100, 100))
+    screen.blit(boss_label, (10, HEIGHT - 30))
 
 def save_level():
     filename = f"Jack/level{current_level}.json"
@@ -91,6 +97,7 @@ def save_level():
         "enemies": [{"x": e["x"], "y": e["y"], "left_bound": e["x"] - 64, "right_bound": e["x"] + 64} for e in enemies],
         "slimes": [{"x": s["x"], "y": s["y"], "left_bound": s["x"] - 64, "right_bound": s["x"] + 64} for s in slimes],
         "powerups": [{"x": p["x"], "y": p["y"], "type": p.get("type", "armor")} for p in powerups],
+        "boss": boss if boss else None,  # Save boss data
         "flag": {"x": flag.x if flag else 0, "y": flag.y if flag else 0, "width": TILE, "height": TILE * 2}
     }
     with open(filename, "w") as f:
@@ -98,16 +105,17 @@ def save_level():
     print(f"Level {current_level} saved to {filename}")
 
 def clear_level_data():
-    global tiles, decorations, enemies, slimes, powerups, flag
+    global tiles, decorations, enemies, slimes, powerups, boss, flag
     tiles = []
     decorations = []
     enemies = []
     slimes = []
     powerups = []
+    boss = None
     flag = None
 
 def load_level():
-    global tiles, decorations, enemies, slimes, powerups, flag
+    global tiles, decorations, enemies, slimes, powerups, boss, flag
     clear_level_data()
     filename = f"Jack/level{current_level}.json"
     try:
@@ -116,8 +124,9 @@ def load_level():
         tiles = [{"rect": pygame.Rect(t["x"], t["y"], TILE, TILE), "type": t["type"]} for t in data.get("tiles", [])]
         decorations = data.get("decorations", [])
         enemies = data.get("enemies", [])
-        slimes = data.get("slimes", [])  # Load slimes
+        slimes = data.get("slimes", [])
         powerups = [{"x": p["x"], "y": p["y"], "type": p.get("type", "armor")} for p in data.get("powerups", [])]
+        boss = data.get("boss", None)  # Load boss data
         f_data = data.get("flag", None)
         if f_data:
             flag = pygame.Rect(f_data["x"], f_data["y"], TILE, TILE * 2)
@@ -143,7 +152,7 @@ while running:
     elif current_level == 2:
         screen.fill((70, 130, 180))   # Steel blue for level 2
     else:  # Level 3
-        screen.fill((135, 206, 235))     # ubove 
+        screen.fill((135, 206, 235))     # above 
     
     draw_grid()
     draw_toolbar()
@@ -171,6 +180,20 @@ while running:
         # Draw a simple slime label
         slime_label = font.render("S", True, (255, 255, 255))
         screen.blit(slime_label, (s["x"] - camera_x + 8, s["y"] + 8))
+    
+    # Draw boss
+    if boss:
+        boss_width = boss.get("width", TILE * 3)
+        boss_height = boss.get("height", TILE * 3)
+        pygame.draw.rect(screen, (128, 0, 128), pygame.Rect(boss["x"] - camera_x, boss["y"], boss_width, boss_height))
+        # Draw boss label
+        boss_label = font.render("BOSS", True, (255, 255, 255))
+        screen.blit(boss_label, (boss["x"] - camera_x + boss_width//4, boss["y"] + boss_height//2))
+        
+        # Draw health info
+        health_text = f"HP: {boss.get('health', 3)}"
+        health_label = font.render(health_text, True, (255, 255, 255))
+        screen.blit(health_label, (boss["x"] - camera_x + 5, boss["y"] + 5))
     
     # Draw powerups
     for p in powerups:
@@ -200,7 +223,8 @@ while running:
             if event.key == pygame.K_6: mode = 'slime'
             if event.key == pygame.K_7: mode = 'powerup'
             if event.key == pygame.K_8: mode = 'bow_powerup'
-            if event.key == pygame.K_9: mode = 'flag'
+            if event.key == pygame.K_9: mode = 'boss'
+            if event.key == pygame.K_F1: mode = 'flag'
             if event.key == pygame.K_0: mode = 'delete'
             if event.key == pygame.K_LEFT:
                 camera_x = max(0, camera_x - 64)
@@ -208,6 +232,15 @@ while running:
                 camera_x = min(LEVEL_WIDTH - WIDTH, camera_x + 64)
             if event.key == pygame.K_l:
                 switch_level()
+            
+            # Boss health adjustment (when boss is selected and placed)
+            if boss and mode == 'boss':
+                if event.key == pygame.K_PLUS or event.key == pygame.K_EQUALS:
+                    boss["health"] = min(boss.get("health", 3) + 1, 10)
+                    print(f"Boss health increased to {boss['health']}")
+                elif event.key == pygame.K_MINUS:
+                    boss["health"] = max(boss.get("health", 3) - 1, 1)
+                    print(f"Boss health decreased to {boss['health']}")
 
         elif event.type == pygame.MOUSEBUTTONDOWN:
             mx, my = pygame.mouse.get_pos()
@@ -221,6 +254,16 @@ while running:
                 enemies = [e for e in enemies if not (e["x"] == grid_x and e["y"] == grid_y)]
                 slimes = [s for s in slimes if not (s["x"] == grid_x and s["y"] == grid_y)]
                 powerups = [p for p in powerups if not (p["x"] == grid_x and p["y"] == grid_y)]
+                
+                # Delete boss if clicked on
+                if boss:
+                    boss_width = boss.get("width", TILE * 3)
+                    boss_height = boss.get("height", TILE * 3)
+                    boss_rect = pygame.Rect(boss["x"], boss["y"], boss_width, boss_height)
+                    if boss_rect.collidepoint(wx, grid_y):
+                        boss = None
+                        print("Boss deleted")
+                
                 if flag and flag.collidepoint(wx, grid_y):
                     flag = None
             else:
@@ -243,6 +286,18 @@ while running:
                         powerups.append({"x": grid_x, "y": grid_y, "type": "armor"})
                     elif mode == "bow_powerup":
                         powerups.append({"x": grid_x, "y": grid_y, "type": "bow"})
+                    elif mode == "boss":
+                        # Only allow one boss per level
+                        boss = {
+                            "x": grid_x,
+                            "y": grid_y,
+                            "width": TILE * 3,
+                            "height": TILE * 3,
+                            "health": 3,
+                            "type": "boss"
+                        }
+                        print(f"Boss placed at ({grid_x}, {grid_y}) with {boss['health']} health")
+                        print("Use +/- keys to adjust boss health while in boss mode")
                     elif mode == "flag":
                         flag = pygame.Rect(grid_x, grid_y, TILE, TILE * 2)
 
