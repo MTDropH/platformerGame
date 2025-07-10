@@ -2,6 +2,33 @@
 import sys
 import random
 import pygame
+import os
+
+def clear_screen():
+    # Clear the screen for Windows or Unix
+    os.system('cls' if os.name == 'nt' else 'clear')
+
+def splash_screen():
+    print("===================================")
+    print("       WELCOME TO MY GAME!")
+    print("     Press Enter to Start...")
+    print("===================================")
+    input()  # Wait for Enter key
+
+def start_page():
+    clear_screen()
+    print("===================================")
+    print("            START PAGE             ")
+    print("  1. Start New Game")
+    print("  2. Load Game")
+    print("  3. Options")
+    print("  4. Quit")
+    print("===================================")
+
+# Run the splash screen, then the start page
+splash_screen()
+start_page()
+
 pygame.mixer.init()
 pygame.mixer.music.load("Hodgehegs\Sounds\sad-violin_FtcVu13.mp3")
 pygame.mixer.music.play(-1)
@@ -14,7 +41,6 @@ SKY            = (255, 255, 255)
 BLUE           = (0, 0, 255)
 BROWN          = (139, 69, 19)
 GREEN          = (0, 255, 0)
-
 GRAVITY        = 0.6
 PLAYER_SPEED   = 5
 JUMP_VELOCITY  = -9
