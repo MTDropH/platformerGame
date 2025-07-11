@@ -2,6 +2,29 @@
 import sys
 import random
 import pygame
+import os
+
+def clear_screen():
+    # Clear the screen for Windows or Unix
+    os.system('cls' if os.name == 'nt' else 'clear')
+
+def splash_screen():
+    print("===================================")
+    print("       WELCOME TO MY GAME!")
+    print("     Press Enter to Start...")
+    print("===================================")
+    input()  # Wait for Enter key
+
+def start_page():
+    clear_screen()
+    print("===================================")
+    print("            START PAGE             ")
+    print("  1. Start New Game")
+    print("  2. Load Game")
+    print("  3. Options")
+    print("  4. Quit")
+    print("===================================")
+
 pygame.mixer.init()
 pygame.mixer.music.load("Hodgehegs/Sounds/sad-violin_FtcVu13.mp3")
 pygame.mixer.music.play(-1)
@@ -14,7 +37,6 @@ SKY            = (255, 255, 255)
 BLUE           = (0, 0, 255)
 BROWN          = (139, 69, 19)
 GREEN          = (0, 255, 0)
-
 GRAVITY        = 0.6
 PLAYER_SPEED   = 5
 JUMP_VELOCITY  = -9
@@ -169,7 +191,9 @@ barrel_timer  = 0
 dk_tick      = 0
 dk_frame     = 0
 
-game_state = "start"
+game_state = "menu"
+menu_options = ["Start New Game", "Load Game", "Options", "Quit"]
+selected_option = 0
 
 while True:
     dt = clock.tick(FPS) / 1000
@@ -177,32 +201,64 @@ while True:
         if event.type == pygame.QUIT:
             pygame.quit()
             sys.exit()
-    
+        if event.type == pygame.KEYDOWN:
+            if game_state == "menu":
+                if event.key == pygame.K_DOWN:
+                    selected_option = (selected_option + 1) % len(menu_options)
+                if event.key == pygame.K_UP:
+                    selected_option = (selected_option - 1) % len(menu_options)
+                if event.key == pygame.K_RETURN:
+                    choice = menu_options[selected_option]
+                    if choice == "Start New Game":
+                        player.rect.topleft = (50, HEIGHT - player_idle_frames[0].get_height() - 10)
+                        barrels.clear()
+                        game_state = "playing"
+                    elif choice == "Load Game":
+                        # For now, just print or set playing
+                        print("Load Game not implemented.")
+                    elif choice == "Options":
+                        print("Options not implemented.")
+                    elif choice == "Quit":
+                        pygame.quit()
+                        sys.exit()
+            elif game_state in ["start", "dead"]:
+                if event.key == pygame.K_SPACE:
+                    player.rect.topleft = (50, HEIGHT - player_idle_frames[0].get_height() - 10)
+                    barrels.clear()
+                    game_state = "playing"
+
     keys = pygame.key.get_pressed()
 
-    # ─────────── START SCREEN ────────────
+    # ───────── MENU SCREEN ──────────
+    if game_state == "menu":
+        win.fill((0, 0, 0))
+        title_text = font.render("Donkey King", True, (255, 255, 255))
+        win.blit(title_text, (WIDTH // 2 - title_text.get_width() // 2, 100))
+
+        for i, option in enumerate(menu_options):
+            color = (255, 255, 0) if i == selected_option else (255, 255, 255)
+            opt_text = font.render(option, True, color)
+            win.blit(opt_text, (WIDTH // 2 - opt_text.get_width() // 2, 250 + i * 40))
+        pygame.display.update()
+        continue
+
+    # ───────── START SCREEN (after win) ──────────
     if game_state == "start":
         win.blit(title_screen, (0, 0))
-        if keys[pygame.K_SPACE]:
-            # reset game
-            player.rect.topleft = (50, HEIGHT - player_idle_frames[0].get_height() - 10)
-            barrels.clear()
-            game_state = "playing"
+        press_text = font.render("Press SPACE to Start", True, (255,255,255))
+        win.blit(press_text, (WIDTH//2 - press_text.get_width()//2, HEIGHT - 100))
         pygame.display.update()
         continue
 
-    # ─────────── DEATH SCREEN ────────────
+    # ───────── DEATH SCREEN ──────────
     if game_state == "dead":
         win.blit(death_screen, (0, 0))
-        if keys[pygame.K_SPACE]:
-            # respawn
-            player.rect.topleft = (50, HEIGHT - player_idle_frames[0].get_height() - 10)
-            barrels.clear()
-            game_state = "playing"
+        press_text = font.render("Press SPACE to Restart", True, (255,255,255))
+        win.blit(press_text, (WIDTH//2 - press_text.get_width()//2, HEIGHT - 100))
         pygame.display.update()
         continue
 
-    # ─────────── GAMEPLAY ────────────────
+    # ───────── GAMEPLAY ──────────
     barrel_timer += 1
     if barrel_timer > 120:
         spawn_barrel()
@@ -215,14 +271,12 @@ while True:
     move_and_cull_barrels()
 
     if hit_player(player.rect):
-        print("Game Over!")
         game_state = "dead"
 
     if player.rect.colliderect(goal):
-        print("You Win!")
-        game_state = "start"  # go back to title on win
+        game_state = "start"
 
-    # ─────────── RENDERING ───────────────
+    # ───────── RENDERING ──────────
     win.blit(game_image, (0, 0))
     for p in platforms:
         pygame.draw.rect(win, BLUE, p)
@@ -239,6 +293,3 @@ while True:
     win.blit(donkey_kong_run_frames[dk_frame], (350, 0))
 
     pygame.display.update()
-
-pygame.quit()
-sys.exit()
