@@ -1723,90 +1723,6 @@
       "type": "stone_dirt"
     },
     {
-      "x": 2560,
-      "y": 256,
-      "width": 32,
-      "height": 32,
-      "type": "stone_dirt"
-    },
-    {
-      "x": 2560,
-      "y": 224,
-      "width": 32,
-      "height": 32,
-      "type": "stone_dirt"
-    },
-    {
-      "x": 2560,
-      "y": 0,
-      "width": 32,
-      "height": 32,
-      "type": "stone_dirt"
-    },
-    {
-      "x": 2560,
-      "y": 64,
-      "width": 32,
-      "height": 32,
-      "type": "stone_dirt"
-    },
-    {
-      "x": 2560,
-      "y": 0,
-      "width": 32,
-      "height": 32,
-      "type": "stone_dirt"
-    },
-    {
-      "x": 2560,
-      "y": 0,
-      "width": 32,
-      "height": 32,
-      "type": "stone_dirt"
-    },
-    {
-      "x": 2560,
-      "y": 0,
-      "width": 32,
-      "height": 32,
-      "type": "stone_dirt"
-    },
-    {
-      "x": 2560,
-      "y": 32,
-      "width": 32,
-      "height": 32,
-      "type": "stone_dirt"
-    },
-    {
-      "x": 2560,
-      "y": 96,
-      "width": 32,
-      "height": 32,
-      "type": "stone_dirt"
-    },
-    {
-      "x": 2560,
-      "y": 128,
-      "width": 32,
-      "height": 32,
-      "type": "stone_dirt"
-    },
-    {
-      "x": 2560,
-      "y": 160,
-      "width": 32,
-      "height": 32,
-      "type": "stone_dirt"
-    },
-    {
-      "x": 2560,
-      "y": 192,
-      "width": 32,
-      "height": 32,
-      "type": "stone_dirt"
-    },
-    {
       "x": 3040,
       "y": 352,
       "width": 32,
@@ -1994,6 +1910,20 @@
       "width": 32,
       "height": 32,
       "type": "stone_dirt"
+    },
+    {
+      "x": 2464,
+      "y": 352,
+      "width": 32,
+      "height": 32,
+      "type": "dirt"
+    },
+    {
+      "x": 2848,
+      "y": 320,
+      "width": 32,
+      "height": 32,
+      "type": "dirt"
     }
   ],
   "decorations": [
@@ -2341,69 +2271,6 @@
       "type": "stone"
     },
     {
-      "x": 2560,
-      "y": 0,
-      "width": 32,
-      "height": 32,
-      "type": "stone"
-    },
-    {
-      "x": 2560,
-      "y": 32,
-      "width": 32,
-      "height": 32,
-      "type": "stone"
-    },
-    {
-      "x": 2560,
-      "y": 64,
-      "width": 32,
-      "height": 32,
-      "type": "stone"
-    },
-    {
-      "x": 2560,
-      "y": 96,
-      "width": 32,
-      "height": 32,
-      "type": "stone"
-    },
-    {
-      "x": 2560,
-      "y": 128,
-      "width": 32,
-      "height": 32,
-      "type": "stone"
-    },
-    {
-      "x": 2560,
-      "y": 160,
-      "width": 32,
-      "height": 32,
-      "type": "stone"
-    },
-    {
-      "x": 2560,
-      "y": 192,
-      "width": 32,
-      "height": 32,
-      "type": "stone"
-    },
-    {
-      "x": 2560,
-      "y": 224,
-      "width": 32,
-      "height": 32,
-      "type": "stone"
-    },
-    {
-      "x": 2560,
-      "y": 256,
-      "width": 32,
-      "height": 32,
-      "type": "stone"
-    },
-    {
       "x": 3200,
       "y": 384,
       "width": 32,
@@ -2605,6 +2472,62 @@
       "width": 32,
       "height": 32,
       "type": "stone"
+    },
+    {
+      "x": 2848,
+      "y": 320,
+      "width": 32,
+      "height": 32,
+      "type": "stone"
+    },
+    {
+      "x": 2464,
+      "y": 352,
+      "width": 32,
+      "height": 32,
+      "type": "stone"
+    },
+    {
+      "x": 2656,
+      "y": 288,
+      "width": 32,
+      "height": 32,
+      "type": "stone"
+    },
+    {
+      "x": 2656,
+      "y": 320,
+      "width": 32,
+      "height": 32,
+      "type": "stone"
+    },
+    {
+      "x": 2624,
+      "y": 320,
+      "width": 32,
+      "height": 32,
+      "type": "stone"
+    },
+    {
+      "x": 2816,
+      "y": 288,
+      "width": 32,
+      "height": 32,
+      "type": "stone"
+    },
+    {
+      "x": 2816,
+      "y": 320,
+      "width": 32,
+      "height": 32,
+      "type": "stone"
+    },
+    {
+      "x": 2784,
+      "y": 320,
+      "width": 32,
+      "height": 32,
+      "type": "stone"
     }
   ],
   "enemies": [
@@ -2694,6 +2617,11 @@
       "x": 64,
       "y": 352,
       "type": "bow"
+    },
+    {
+      "x": 2400,
+      "y": 320,
+      "type": "armor"
     }
   ],
   "boss": {

@@ -41,8 +41,8 @@ def load_level_sprites(level_number):
         decoration_images["stone"] = pygame.transform.scale(
             pygame.image.load("Jack/images/level_3_stone.png").convert_alpha(), (TILE, TILE))
 
-        #powerup_img = pygame.transform.scale(
-        #    pygame.image.load("Jack/images/magic_gem.png").convert_alpha(), (TILE, TILE))
+        powerup_img = pygame.transform.scale(
+            pygame.image.load("Jack/images/armour_power_up.png").convert_alpha(), (TILE, TILE))
 
         enemy_frames[0] = pygame.transform.scale(
             pygame.image.load("Jack/images/evil guy run1.png").convert_alpha(), (TILE, TILE * 2))
