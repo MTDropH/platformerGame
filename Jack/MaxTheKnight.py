@@ -1546,13 +1546,6 @@ def main(level_number=1):
         screen.blit(flag_img, flag.move(-camera_x, 0))
         draw_lives(screen, player.lives)
 
-        # Draw level indicator
-        try:
-            font = pygame.font.SysFont("Arial", 24)
-            level_text = font.render(f"Level {level_number}", True, (255, 255, 255))
-            screen.blit(level_text, (WIDTH - 120, 10))
-        except:
-            pass
 
         pygame.display.update()
 
